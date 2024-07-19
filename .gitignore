@@ -1,0 +1,31 @@
+# Binaries
+/bin/
+/build/
+
+# Object files
+*.o
+
+# Compiled Dynamic libraries
+*.so
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Files
+*.out
+*.exe
+
+# Backup files
+*~
+*.bak
+
+# Custom script
+custom.sh
+
+# MacOS specific files
+.DS_Store
