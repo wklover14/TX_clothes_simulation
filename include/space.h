@@ -50,6 +50,7 @@ float   norm(Vector a);
 Vector  mult(float , Vector);
 char*   PointToString(Point);
 char*   VectorToString(Vector);
+Vector  newVector(float, float, float);
 
 #endif // !SPACE_H
 

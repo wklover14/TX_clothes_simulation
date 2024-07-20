@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "space.h"
 
 /**
  * The scalar product between a and b
@@ -64,4 +65,13 @@ char*   VectorToString(Vector v)
     }
     snprintf(result, 25, "[%.2f, %.2f, %.2f]", v.x, v.y, v.z);
     return result;
+}
+
+/**
+ * Generate a new vector 
+ */
+Vector newVector(float x, float y, float z)
+{
+    Vector tmp = {x, y, z};
+    return tmp;
 }

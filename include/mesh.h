@@ -51,16 +51,15 @@ typedef struct Mesh
 /************************************
  * EXPORTED VARIABLES AND CONST
  ************************************/
-extern const float    Mu;                    // Mass of a point
-extern const float    C_DIS;                    // Damping coefficient
-extern const float    C_VI;                   // Viscous coefficient
-extern const Vector   G;      // Gravity
+extern const float    Mu;       // Mass of a point
+extern const float    C_DIS;    // Damping coefficient
+extern const float    C_VI;     // Viscous coefficient
+extern const Vector   G;        // Gravity
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
-void initMesh(Mesh*);
-void initMesh(Mesh*);
+void initMesh(Mesh*, int, int);
 Vector** computeForce(Mesh*);
 Vector** computeAcceleration(Mesh*, float);
 Vector** computeVelocity(Mesh*, float);
