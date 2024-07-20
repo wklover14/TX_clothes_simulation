@@ -16,6 +16,8 @@
 #include "space.h"
 #include "log.h"
 #include <stdlib.h>
+#include "log.h"
+#include <stdlib.h>
 
 /************************************
  * MACROS AND DEFINES
@@ -29,6 +31,7 @@
 typedef struct Spring{
     Point  ext_1;               // One extremum point
     Point  ext_2;               // The other extremum point
+    float  stiffness;
     float  stiffness;
 } Spring;
 
@@ -47,16 +50,17 @@ typedef struct Mesh
 }Mesh;
 
 /************************************
- * EXPORTED VARIABLES
+ * EXPORTED VARIABLES AND CONST
  ************************************/
-extern float    Mu;                    // Mass of a point
-extern float    C_DIS;                    // Damping coefficient
-extern float    C_VI;                   // Viscous coefficient
-extern Vector   G;      // Gravity
+extern const float    Mu;                    // Mass of a point
+extern const float    C_DIS;                    // Damping coefficient
+extern const float    C_VI;                   // Viscous coefficient
+extern const Vector   G;      // Gravity
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
+void initMesh(Mesh*);
 void initMesh(Mesh*);
 Vector** computeForce(Mesh*);
 Vector** computeAcceleration(Mesh*, float);
