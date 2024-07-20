@@ -32,7 +32,6 @@ typedef struct Spring{
     Point  ext_1;               // One extremum point
     Point  ext_2;               // The other extremum point
     float  stiffness;
-    float  stiffness;
 } Spring;
 
 

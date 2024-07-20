@@ -19,17 +19,14 @@ Vector** computeForce(Mesh* m)
 {
     //TODO: test
     return NULL;
-    return NULL;
 }
 
 Vector** computeAcceleration(Mesh* m, float delta_t)
 {
     return NULL;
-    return NULL;
 }
 
 Vector** computeVelocity(Mesh* m, float delta_t)
 {
-    return NULL;
     return NULL;
 }
