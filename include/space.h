@@ -1,8 +1,8 @@
 /**
 *************************************************************
-* @file     ${file_name}
-* @author   WATCHO KEUGONG Gabby Pavel
-* @date     ${date}
+* @file     space.h
+* @author   WATCHO KEUGONG Gabby Pavel, gwathok@etu.utc.fr
+* @date     20/07/2024
 * @brief
 *************************************************************
 */
@@ -21,11 +21,6 @@
 /************************************
  * TYPEDEFS
  ************************************/
-typedef struct Point
-{
-    int i;
-    int j;
-} Point;
 
 typedef struct Vector
 {
@@ -34,6 +29,13 @@ typedef struct Vector
     float z;
 } Vector;
 
+
+typedef struct Point
+{   
+    // Coordinate on the mesh grid
+    unsigned int i;
+    unsigned int j;
+} Point;
 /************************************
  * EXPORTED VARIABLES
  ************************************/

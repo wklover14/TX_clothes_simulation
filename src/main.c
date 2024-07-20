@@ -4,7 +4,7 @@
 int main(int argc, char** argv){
     printf("Hello world, I'm back for the best and the segfault \n");
 
-    Vector a = {-1, -1, -1};
+    Vector a = {-1, 1, -1};
     Vector b = { 1,  1,  1};
     float alpha = 3;
 

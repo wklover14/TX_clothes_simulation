@@ -39,7 +39,7 @@ char*   PointToString(Point p)
 {
     // Allocate enough memory for the string representation
     // Assuming the format "(x, y)" with some extra space for safety
-    char* result = (char*)malloc(30 * sizeof(char));
+    char* result = (char*) malloc(15 * sizeof(char));
     if (result == NULL)
     {
         perror("Failed to allocate memory");
@@ -56,7 +56,7 @@ char*   VectorToString(Vector v)
 {
     // Allocate enough memory for the string representation
     // Assuming the format "Vector(x: x, y: y, z: z)" with some extra space for safety
-    char* result = (char*)malloc(50 * sizeof(char));
+    char* result = (char*)malloc(25 * sizeof(char));
     if (result == NULL)
     {
         perror("Failed to allocate memory");
