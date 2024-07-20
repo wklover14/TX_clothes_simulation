@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "../include/space.h"
+#include "../include/mesh.h"
 
 int main(int argc, char** argv){
     printf("Hello world, I'm back for the best and the segfault \n");
@@ -10,6 +12,9 @@ int main(int argc, char** argv){
 
     printf("The scalar product of a and b is %f  \n", scalar_product(a, b));
     printf("The multiplication of %f by a is %s \n", alpha, VectorToString( mult(alpha, a) ) );
+
+    Mesh* m = NULL;
+    initMesh(m);
 
     return 0;
 }
