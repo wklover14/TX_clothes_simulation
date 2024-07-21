@@ -5,8 +5,9 @@
 int main(int argc, char** argv)
 {
     Mesh* m = NULL;
-    initMesh(m, 5, 5);
-    log_error("Exiting ");
+    initMesh(m, 3, 3);
+    log_info("The number of springs in this network is %d", numberOfSprings(3, 3));
+    log_debug("Exiting ");
 
     return 0;
 }

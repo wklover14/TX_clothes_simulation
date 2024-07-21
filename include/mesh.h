@@ -28,7 +28,8 @@
  ************************************/
 
 // A spring is a segment define by two points and a stiffness
-typedef struct Spring{
+typedef struct 
+{
     Point  ext_1;               // One extremum point
     Point  ext_2;               // The other extremum point
     float  stiffness;
@@ -51,17 +52,23 @@ typedef struct Mesh
 /************************************
  * EXPORTED VARIABLES AND CONST
  ************************************/
-extern const float    Mu;       // Mass of a point
-extern const float    C_DIS;    // Damping coefficient
-extern const float    C_VI;     // Viscous coefficient
-extern const Vector   G;        // Gravity
+extern const float    Mu;                   // Mass of a point
+extern const float    C_DIS;                // Damping coefficient
+extern const float    C_VI;                 // Viscous coefficient
+extern const Vector   G;                    // Gravity
+
+extern const float    STIFFNESS_1;           // stiffess of a spring of lenght 1
+extern const float    STIFFNESS_2;           // stiffess of a spring of lenght 2
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
-void initMesh(Mesh*, int, int);
+void initMesh(Mesh*, unsigned int,unsigned int);
 Vector** computeForce(Mesh*);
 Vector** computeAcceleration(Mesh*, float);
 Vector** computeVelocity(Mesh*, float);
 
+Spring newSpring(Point, Point, float);
+unsigned int numberOfSprings(unsigned int,unsigned int);
+void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int n, int m);
 #endif // !MESH_H
