@@ -7,4 +7,4 @@ void log_error(const char* message, ...) {  va_list args;   va_start(args, messa
 
 void log_info(const char* message, ...) {   va_list args;   va_start(args, message);    log_format("\033[34mInfo\033[0m", message, args);  va_end(args); }
 
-void log_debug(const char* message, ...) {  va_list args;   va_start(args, message);    log_format("\033[33mdebug\033[0m", message, args);     va_end(args); }
+void log_debug(const char* message, ...) {  va_list args;   va_start(args, message);    log_format("\033[33mDebug\033[0m", message, args);     va_end(args); }
