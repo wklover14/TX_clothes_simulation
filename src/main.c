@@ -1,15 +1,21 @@
 #include <stdio.h>
-#include "../include/space.h"
+#include <stdlib.h>
+#include "../include/mesh.h"
 
-int main(int argc, char** argv){
-    printf("Hello world, I'm back for the best and the segfault \n");
+int main(int argc, char** argv)
+{
+    Mesh* m = (Mesh*) malloc(sizeof(Mesh));
+    initMesh(m, 10, 10);
+    log_info("The number of springs in this network is %d", numberOfSprings(3, 3));
+    
+    if ( m == NULL )
+    {
+        log_error("Mesh is still null");
+        return 0;
+    }
+    convert_mesh_to_vtk(m, "mesh_polydata.vtk");
+    convert_mesh_to_unstructure_grid_vtk(m, "mesh_unstruct_grid.vtk");
 
-    Vector a = {-1, -1, -1};
-    Vector b = { 1,  1,  1};
-    float alpha = 3;
-
-    printf("The scalar product of a and b is %f  \n", scalar_product(a, b));
-    printf("The multiplication of %f by a is %s \n", alpha, VectorToString( mult(alpha, a) ) );
-
+    log_debug("Exiting ");
     return 0;
 }

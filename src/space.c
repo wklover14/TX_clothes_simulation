@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "space.h"
 
 /**
  * The scalar product between a and b
@@ -39,7 +40,7 @@ char*   PointToString(Point p)
 {
     // Allocate enough memory for the string representation
     // Assuming the format "(x, y)" with some extra space for safety
-    char* result = (char*)malloc(30 * sizeof(char));
+    char* result = (char*) malloc(15 * sizeof(char));
     if (result == NULL)
     {
         perror("Failed to allocate memory");
@@ -56,7 +57,7 @@ char*   VectorToString(Vector v)
 {
     // Allocate enough memory for the string representation
     // Assuming the format "Vector(x: x, y: y, z: z)" with some extra space for safety
-    char* result = (char*)malloc(50 * sizeof(char));
+    char* result = (char*)malloc(25 * sizeof(char));
     if (result == NULL)
     {
         perror("Failed to allocate memory");
@@ -64,4 +65,13 @@ char*   VectorToString(Vector v)
     }
     snprintf(result, 25, "[%.2f, %.2f, %.2f]", v.x, v.y, v.z);
     return result;
+}
+
+/**
+ * Generate a new vector 
+ */
+Vector newVector(float x, float y, float z)
+{
+    Vector tmp = {x, y, z};
+    return tmp;
 }

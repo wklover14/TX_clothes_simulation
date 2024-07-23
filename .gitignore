@@ -29,3 +29,11 @@ custom.sh
 
 # MacOS specific files
 .DS_Store
+
+# Visual Studio files
+.vs/
+CppProperties.json
+ProjectSettings.json
+
+# vtk files
+*.vtk*

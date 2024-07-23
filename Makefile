@@ -16,6 +16,10 @@ CFLAGS = -Wall -I$(INCLUDE_DIR)
 # Linker flags
 LDFLAGS = -lm
 
+# Memory checker
+MEMCHECKER = valgrind
+MEMFLAGS = --leak-check=full --track-origins=yes -s
+
 # Source files
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 
@@ -44,6 +48,11 @@ run: $(TARGET)
 	@echo ""
 	@echo ""
 	./$(TARGET)
+
+# Run the application with memory check
+saferun: $(TARGET)
+	@echo ""
+	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET)
 
 # Add phony targets
 .PHONY: all clean run
