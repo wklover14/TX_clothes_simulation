@@ -5,6 +5,9 @@
 #include <string.h>
 #include "space.h"
 
+
+const Vector   G                = {0.0f, 9.92f, 0.0f};      // Gravity 
+
 /**
  * The scalar product between a and b
  */

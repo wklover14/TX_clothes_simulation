@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
     Mesh* m = (Mesh*) malloc(sizeof(Mesh));
     initMesh(m, 10, 10);
-    log_info("The number of springs in this network is %d", numberOfSprings(3, 3));
+    log_info("The number of springs in this network is %d", numberOfSprings(m->n, m->m));
     
     if ( m == NULL )
     {

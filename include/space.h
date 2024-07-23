@@ -36,9 +36,12 @@ typedef struct Point
     unsigned int i;
     unsigned int j;
 } Point;
+
 /************************************
  * EXPORTED VARIABLES
  ************************************/
+
+extern const Vector   G;                    // Gravity
 
 
 /************************************
