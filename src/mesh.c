@@ -11,11 +11,9 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
 {
     if(mesh == NULL)
     {
-        log_info("Mesh provided is empty, creating a new one");
-        mesh = (Mesh*) malloc(sizeof(Mesh));
-    } else {
-        log_info("Creating new Mesh");
-    }
+        log_error("Mesh provided is empty!!");
+        return;
+    } 
 
     if(n == 0 || m == 0)
     {
@@ -119,6 +117,12 @@ void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int 
         springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
         (*spring_index)++;
     }
+    if (i-1>=0 && j+1<m)
+    {
+        Point ext_b = {i-1, j+1};
+        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
+        (*spring_index)++;
+    }
 
     // Flexion springs i+2,j and i,j+2
     if (i+2 < n) 
@@ -134,4 +138,90 @@ void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int 
         springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
         (*spring_index)++;
     }
+}
+
+// Convert a mesh to set point of points and lines in a vtk file
+void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename)
+{
+    FILE* file = fopen(output_filename, "w");
+    if (file == NULL) {
+        log_error("Error: Could not open file %s.\n",output_filename);
+        return;
+    }
+
+    // Write VTK file header
+    fprintf(file, "# vtk DataFile Version 4.2\n");
+    fprintf(file, "Mesh Data\n");
+    fprintf(file, "ASCII\n");
+    fprintf(file, "DATASET POLYDATA\n");
+
+    // Write points
+    unsigned int total_points = mesh->n * mesh->m;
+    fprintf(file, "POINTS %u float\n", total_points);
+    for (unsigned int i = 0; i < mesh->n; i++) {
+        for (unsigned int j = 0; j < mesh->m; j++) {
+            fprintf(file, "%3f %3f %3f\n", mesh->P[i][j].x, mesh->P[i][j].y, mesh->P[i][j].z);
+        }
+    }
+
+    // Write lines (springs)
+    unsigned int springs_count = numberOfSprings(mesh->n , mesh->m);
+
+    // print all springs
+    fprintf(file, "LINES %u %u\n", springs_count, 3 * springs_count);
+    for (unsigned int k = 0; k < springs_count; k++) {
+        // Convert grid coordinates (i, j) to point indices
+        unsigned int id1 = mesh->springs[k].ext_1.i * mesh->m + mesh->springs[k].ext_1.j;
+        unsigned int id2 = mesh->springs[k].ext_2.i * mesh->m + mesh->springs[k].ext_2.j;
+        fprintf(file, "2 %u %u\n", id1, id2);
+    }
+
+    fclose(file);
+    log_info("Output file %s created", output_filename);
+}
+
+// Convert a Mesh into a a grid that can be used as surface easily.
+void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_filename)
+{
+    FILE* file = fopen(output_filename, "w");
+    if (file == NULL) {
+        log_error("Error: Could not open file %s.\n",output_filename);
+        return;
+    }
+    // Write VTK file header
+    fprintf(file, "# vtk DataFile Version 4.2\n"); // Only 4.2 version is correctly supported by Paraview
+    fprintf(file, "Unstructured Grid Mesh\n");
+    fprintf(file, "ASCII\n");
+    fprintf(file, "DATASET UNSTRUCTURED_GRID\n");
+
+    // Write points
+    unsigned int total_points = mesh->n * mesh->m;
+    fprintf(file, "POINTS %u float\n", total_points);
+    for (unsigned int i = 0; i < mesh->n; i++) {
+        for (unsigned int j = 0; j < mesh->m; j++) {
+            fprintf(file, "%f %f %f\n", mesh->P[i][j].x, mesh->P[i][j].y, mesh->P[i][j].z);
+        }
+    }
+
+    // Write cells (quadrilateral)
+    unsigned int total_cells = (mesh->n - 1) * (mesh->m - 1);
+    fprintf(file, "CELLS %u %u\n", total_cells, 5 * total_cells); // Each cell has 4 points + 1 (for the number of points)
+    for (unsigned int i = 0; i < mesh->n - 1; i++) {
+        for (unsigned int j = 0; j < mesh->m - 1; j++) {
+            unsigned int id1 = i * mesh->m + j;
+            unsigned int id2 = i * mesh->m + (j + 1);
+            unsigned int id3 = (i + 1) * mesh->m + j;
+            unsigned int id4 = (i + 1) * mesh->m + (j + 1);
+            fprintf(file, "4 %u %u %u %u\n", id1, id2, id4, id3);
+        }
+    }
+
+    // Write cell types
+    // VTK_QUAD = 9
+    fprintf(file, "CELL_TYPES %u\n", total_cells);
+    for (unsigned int k = 0; k < total_cells; k++) {
+        fprintf(file, "9\n");
+    }
+
+    fclose(file);
 }

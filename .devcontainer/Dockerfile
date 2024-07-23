@@ -10,6 +10,11 @@ RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
     fi \
     && rm -f /tmp/reinstall-cmake.sh
 
+
+# Install VTK lib
+RUN apt-get update && \
+    apt-get install -y libvtk9-dev
+
 # Make vscode sudo
 RUN echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 

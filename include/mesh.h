@@ -71,4 +71,8 @@ Vector** computeVelocity(Mesh*, float);
 Spring newSpring(Point, Point, float);
 unsigned int numberOfSprings(unsigned int,unsigned int);
 void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int n, int m);
+
+void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename);
+void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_filename);
+
 #endif // !MESH_H
