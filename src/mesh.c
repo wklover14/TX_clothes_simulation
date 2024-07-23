@@ -60,24 +60,57 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
     log_info("Mesh Created!");
 }
 
-Vector** computeForce(Mesh* m)
+
+/**
+ * Compute the next position of the mesh point.
+ * For now, we ignore the fluid forces
+ */
+void updatePosition(Mesh* mesh, float delta_t)
 {
     //TODO: test
-    return NULL;
-}
+    if (mesh == NULL || mesh->P == NULL)
+    {
+        log_error("Mesh or position empty! Exiting");
+        return;
+    }
+    for(unsigned int i = 0; i<mesh->n; i++)
+    {
+        for(unsigned int j=0; j<mesh->m; j++)
+        {
+            // Point i,j 
 
-Vector** computeAcceleration(Mesh* m, float delta_t)
-{
-    return NULL;
-}
+            // internal forces
+            Vector f_int = newVector(0.0f,0.0f, 0.0f); // sum of internal forces
 
-Vector** computeVelocity(Mesh* m, float delta_t)
-{
-    return NULL;
+            unsigned int number_springs = 0;
+            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->n, &number_springs);
+
+            for(unsigned int k=0; k < number_springs; k++)
+            {
+                Vector l_i_j_k_l = newVectorFromPoint(mesh->P[i][j], mesh->P[R[k].ext_2.i][R[k].ext_2.j]);
+                Vector tmp = addVector(l_i_j_k_l, multVector(-1*R[k].natural_lenght / norm(l_i_j_k_l), l_i_j_k_l));
+                f_int = addVector(multVector(R[k].stiffness, tmp), f_int);
+            }
+
+            // gravity force that are applying
+
+            // Viscous damping force
+
+            // Force from the fluid
+
+            // Global result to the mesh
+            Vector F = f_int;
+
+            mesh->A[i][j] = multVector(0.5f / Mu, F); // acceleration at t+delta_t
+            mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, mesh->A[i][j]));
+            mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
+        }
+    }
+    mesh->t += delta_t;
 }
 
 /** 
- * Convert a mesh to set point of points and lines in a vtk file
+ * Convert a mesh into a set of points and lines in a vtk file
  */ 
 void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename)
 {
@@ -115,7 +148,6 @@ void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename)
     }
 
     fclose(file);
-    log_info("Output file %s created", output_filename);
 }
 
 /**

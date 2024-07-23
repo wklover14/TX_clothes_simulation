@@ -50,11 +50,12 @@ extern const Vector   G;                    // Gravity
 
 float   scalar_product(Vector , Vector );
 float   norm(Vector a);
-Vector  mult(float , Vector);
+Vector  multVector(float , Vector);
 char*   PointToString(Point);
 char*   VectorToString(Vector);
 Vector  newVector(float, float, float);
-
+Vector  newVectorFromPoint(Vector, Vector);
+Vector  addVector(Vector, Vector);
 #endif // !SPACE_H
 
 

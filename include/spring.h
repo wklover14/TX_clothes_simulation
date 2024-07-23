@@ -14,11 +14,14 @@
  * INCLUDES
  ************************************/
 #include "space.h"
+#include "log.h"
+#include <stdlib.h>
 
 /************************************
  * MACROS AND DEFINES
  ************************************/
 
+#define MAX_SPRINGS_PER_POINT 12
 /************************************
  * TYPEDEFS
  ************************************/
@@ -29,6 +32,7 @@ typedef struct
     Point  ext_1;               // One extremum point
     Point  ext_2;               // The other extremum point
     float  stiffness;
+    float  natural_lenght;      
 } Spring;
 
 
@@ -37,14 +41,16 @@ typedef struct
  ************************************/
 extern const float    STIFFNESS_1;           // stiffess of a spring of lenght 1
 extern const float    STIFFNESS_2;           // stiffess of a spring of lenght 2
+extern const float    NATURAL_LEN_1;
+extern const float    NATURAL_LEN_2;
 
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
-Spring newSpring(Point, Point, float);
+Spring newSpring(Point, Point, float, float);
 unsigned int numberOfSprings(unsigned int,unsigned int);
 void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int n, int m);
-
+Spring* getPossibleSprings(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int*);
 #endif // !SPRING_H

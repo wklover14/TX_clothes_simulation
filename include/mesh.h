@@ -43,16 +43,16 @@ typedef struct Mesh
 /************************************
  * EXPORTED VARIABLES AND CONST
  ************************************/
+
 extern const float    Mu;                   // Mass of a point
 extern const float    C_DIS;                // Damping coefficient
 extern const float    C_VI;                 // Viscous coefficient
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
+
 void initMesh(Mesh*, unsigned int,unsigned int);
-Vector** computeForce(Mesh*);
-Vector** computeAcceleration(Mesh*, float);
-Vector** computeVelocity(Mesh*, float);
+void updatePosition(Mesh*, float);
 
 void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename);
 void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_filename);

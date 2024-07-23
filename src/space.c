@@ -25,9 +25,9 @@ float norm(Vector a)
 }
 
 /**
- * Multiply the vector a by the scalar alpha and return the new vector
+ * multVectoriply the vector a by the scalar alpha and return the new vector
  */
-Vector  mult(float alpha, Vector a)
+Vector  multVector(float alpha, Vector a)
 {
     Vector res;
     res.x = alpha * a.x;
@@ -77,4 +77,22 @@ Vector newVector(float x, float y, float z)
 {
     Vector tmp = {x, y, z};
     return tmp;
+}
+
+/**
+ * Return the vector ->ab
+ */
+Vector  newVectorFromPoint(Vector a, Vector b)
+{
+    Vector res = newVector(b.x - a.x, b.y - a.y, b.z - a.z);
+    return res;
+}
+
+/**
+ * Return a + b
+ */
+Vector  addVector(Vector a, Vector b)
+{
+    Vector res = {a.x + b.x, a.y + b.y, a.z + b.z};
+    return res;
 }
