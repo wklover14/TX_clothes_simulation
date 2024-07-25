@@ -7,7 +7,7 @@
 int main(int argc, char** argv)
 {
     Mesh* m = (Mesh*) malloc(sizeof(Mesh));
-    initMesh(m, 20, 20);
+    initMesh(m, 3, 3);
     log_info("The number of springs in this network is %d", numberOfSprings(m->n, m->m));
     
     if (m == NULL)
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    float delta_t = 0.02f;
+    float delta_t = 0.002f;
     unsigned int count = 100;
     char poly_file_name[256];
     char grid_file_name[256];
@@ -26,8 +26,8 @@ int main(int argc, char** argv)
     for(unsigned int i=0; i< count; i++)
     {
         updatePosition(m, delta_t);
-        snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly/mesh_%03u.vtk", i);
-        snprintf(grid_file_name, sizeof(grid_file_name), "vtk_grid/mesh_%03u.vtk", i);
+        snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly/mesh_poly_%03u.vtk", i);
+        snprintf(grid_file_name, sizeof(grid_file_name), "vtk_grid/mesh_grid_%03u.vtk", i);
 
         convert_mesh_to_vtk(m, poly_file_name);
         convert_mesh_to_unstructure_grid_vtk(m, grid_file_name);

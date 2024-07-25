@@ -22,6 +22,7 @@
 /************************************
  * MACROS AND DEFINES
  ************************************/
+#define SPACING 0.03 //   standard spacing between two points on the same axis
 
 /************************************
  * TYPEDEFS
@@ -33,9 +34,10 @@ typedef struct Mesh
     unsigned int    m;          // number of columns
 
     float           t;          // the time at which position P are calculated 
-    Vector**        P;          // Coordinate in the space, should be used for rendering
+    Vector**        P;          // Coordinate in the space at t time, should be used for rendering
     Vector**        V;          // Velocity matrix n*m
-    Vector**        A;          // Acceleration matrix n*m
+
+    Vector**        P0;         // Initial position matrix
     
     Spring*         springs;    // list of springs of the mesh, refered as R in the litterature
 }Mesh;

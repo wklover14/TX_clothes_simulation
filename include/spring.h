@@ -31,26 +31,24 @@ typedef struct
 {
     Point  ext_1;               // One extremum point
     Point  ext_2;               // The other extremum point
-    float  stiffness;
-    float  natural_lenght;      
+    float  stiffness;      
 } Spring;
 
 
 /************************************
  * EXPORTED VARIABLES AND CONST
  ************************************/
-extern const float    STIFFNESS_1;           // stiffess of a spring of lenght 1
-extern const float    STIFFNESS_2;           // stiffess of a spring of lenght 2
-extern const float    NATURAL_LEN_1;
-extern const float    NATURAL_LEN_2;
+extern const float    STIFFNESS_1;           // stiffess of a structural spring
+extern const float    STIFFNESS_2;           // stiffess of a shear spring 
+extern const float    STIFFNESS_3;           // stiffess of a flexion spring
 
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
-Spring newSpring(Point, Point, float, float);
+Spring newSpring(Point, Point, float);
 unsigned int numberOfSprings(unsigned int,unsigned int);
-void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int n, int m);
+void fillSprings(Spring* springs, unsigned int* spring_index,int i, int j, int n, int m);
 Spring* getPossibleSprings(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int*);
 #endif // !SPRING_H

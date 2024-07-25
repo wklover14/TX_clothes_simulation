@@ -21,7 +21,7 @@ float  scalar_product(Vector a, Vector b)
  */
 float norm(Vector a)
 {
-    return sqrt( pow(a.x, 2) + pow(a.y, 2) + pow(a.z, 2) );
+    return sqrt( a.x * a.x + a.y * a.y + a.z * a.z );
 }
 
 /**
