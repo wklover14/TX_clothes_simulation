@@ -142,7 +142,7 @@ void updatePosition(Mesh* mesh, float delta_t)
             Vector f_gr = {0.0f, -1.0f, 0.0f};
 
             // Viscous damping force
-            Vector f_dis = {0, 0, 0}; //multVector( -1 * C_DIS, mesh->V[i][j]);
+            Vector f_dis = multVector( -1 * C_DIS, mesh->V[i][j]);
 
             // Force from the fluid
 
