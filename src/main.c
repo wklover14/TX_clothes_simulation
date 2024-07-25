@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     }
 
     float delta_t = 0.002f;
-    unsigned int count = 100;
+    unsigned int count = 10;
     char poly_file_name[256];
     char grid_file_name[256];
 

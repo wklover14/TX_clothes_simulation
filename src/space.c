@@ -96,3 +96,15 @@ Vector  addVector(Vector a, Vector b)
     Vector res = {a.x + b.x, a.y + b.y, a.z + b.z};
     return res;
 }
+
+/**
+ * Deallocate the memory used for a matrix with m column
+ */
+freeMatrix(Vector** mesh, unsigned int m)
+{
+    for(unsigned int i=0; i < m; i++)
+    {
+        free(mesh[i]);
+    }
+    free(mesh);
+}

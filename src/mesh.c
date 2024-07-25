@@ -1,6 +1,6 @@
 #include "../include/mesh.h"
 
-const float    Mu               = 0.02f;                    // Mass of a point
+const float    Mu               = 1.00f;                    // Mass of a point
 const float    C_DIS            = 0.04f;                    // Damping coefficient
 const float    C_VI             = 0.023f;                   // Viscous coefficient
 
@@ -92,7 +92,7 @@ void updatePosition(Mesh* mesh, float delta_t)
             {
                 continue;
             }
-            if( i == mesh->n - 1 && j== mesh->m-1)
+            if( i == mesh->n-1 && j== mesh->m-1)
             {
                 continue;
             }
@@ -106,21 +106,21 @@ void updatePosition(Mesh* mesh, float delta_t)
             unsigned int number_springs = 0;
             Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &number_springs);
 
-            for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
-            {
-                Point target                    = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
-                Vector target_position          = mesh->P[target.i][target.j];
-                Vector original_target_position = mesh->P0[target.i][target.j];
+            // for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
+            // {
+            //     Point target                    = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
+            //     Vector target_position          = mesh->P[target.i][target.j];
+            //     Vector original_target_position = mesh->P0[target.i][target.j];
 
-                Vector l_i_j_k_l = newVectorFromPoint(current_position, target_position);
-                Vector l_0_i_j_k = newVectorFromPoint(original_position, original_target_position);
+            //     Vector l_i_j_k_l = newVectorFromPoint(current_position, target_position);
+            //     Vector l_0_i_j_k = newVectorFromPoint(original_position, original_target_position);
                 
-                Vector tmp = multVector( -1 * norm(l_0_i_j_k) / norm(l_i_j_k_l) , l_i_j_k_l);
-                tmp = addVector(l_i_j_k_l, tmp); 
-                tmp = multVector(R[k].stiffness, tmp);
+            //     Vector tmp = multVector( -1 * norm(l_0_i_j_k) / norm(l_i_j_k_l) , l_i_j_k_l);
+            //     tmp = addVector(l_i_j_k_l, tmp); 
+            //     tmp = multVector(R[k].stiffness, tmp);
 
-                f_int = addVector(tmp, f_int);
-            }
+            //     f_int = addVector(tmp, f_int);
+            // }
 
             // for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
             // {
@@ -142,7 +142,7 @@ void updatePosition(Mesh* mesh, float delta_t)
             Vector f_gr = {0.0f, -1.0f, 0.0f};
 
             // Viscous damping force
-            Vector f_dis = multVector( -1 * C_DIS, mesh->V[i][j]);
+            Vector f_dis = {0, 0, 0}; //multVector( -1 * C_DIS, mesh->V[i][j]);
 
             // Force from the fluid
 
@@ -154,15 +154,31 @@ void updatePosition(Mesh* mesh, float delta_t)
         }
     }
 
+    log_debug("\nMatrix of acceleration at %.3f", mesh->t + delta_t);
+
     // Update the speed and the position,
     for(unsigned int i = 0; i<mesh->n; i++)
     {
         for(unsigned int j=0; j<mesh->m; j++)
         {   
+            printf("%s\t", VectorToString(acceleration[i][j]));
+            
+            // Fixed points 
+            if( i == 0 && j== mesh->m-1)
+            {
+                continue;
+            }
+            if( i == mesh->n - 1 && j== mesh->m-1)
+            {
+                continue;
+            }
+            
             mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, acceleration[i][j]));
             mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
         }
+        printf("\n");
     }
+    freeMatrix(acceleration, mesh->m);
     mesh->t += delta_t;
 }
 

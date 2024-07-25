@@ -56,6 +56,7 @@ char*   VectorToString(Vector);
 Vector  newVector(float, float, float);
 Vector  newVectorFromPoint(Vector, Vector);
 Vector  addVector(Vector, Vector);
+void    freeMatrix(Vector**, unsigned int);
 #endif // !SPACE_H
 
 
