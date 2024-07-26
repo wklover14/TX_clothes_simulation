@@ -1,9 +1,11 @@
 #include "../include/mesh.h"
 
-const float    Mu               = 1.00f;                    // Mass of a point
-const float    C_DIS            = 0.04f;                    // Damping coefficient
-const float    C_VI             = 0.023f;                   // Viscous coefficient
-
+/**
+ * Return true if a point is fixed and false if not
+ */
+bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh) {
+    return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
+}
 
 /**
  * Correctly allocate all attributes of a mesh, it fails if the mesh provided is NULL
@@ -68,110 +70,11 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
  */
 void updatePosition(Mesh* mesh, float delta_t)
 {
-    //TODO: test
-    if (mesh == NULL || mesh->P == NULL)
-    {
-        log_error("Mesh or position empty! Exiting");
-        return;
-    }
     
-    // The result shoul be but inside a specific Acceleration matrix, and after the computation of every forces, update other matrices
-    Vector** acceleration = (Vector**) malloc(mesh->n * sizeof(Vector*));
-    for(unsigned int i = 0; i < mesh->n; i++ )
-    {
-        acceleration[i] = (Vector*) malloc(mesh->m * sizeof(Vector));
-    }
-    log_debug("internal forces matrix");
-    for(unsigned int i = 0; i<mesh->n; i++)
-    {
-
-        for(unsigned int j=0; j<mesh->m; j++)
-        {   
-            // Fixed points 
-            if( i == 0 && j== mesh->m-1)
-            {
-                continue;
-            }
-            if( i == mesh->n-1 && j== mesh->m-1)
-            {
-                continue;
-            }
-            // Point i,j 
-            Vector current_position     =  mesh->P[i][j];   // position of the current point i,j
-            Vector original_position    =  mesh->P0[i][j];  // original position of the current point i,j
-            
-            // internal forces
-            Vector f_int = newVector(0.0f, 0.0f, 0.0f);     // sum of internal forces
-
-            unsigned int number_springs = 0;
-            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &number_springs);
-
-            for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
-            {
-                Point  target                   = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
-                Vector target_position          = mesh->P[target.i][target.j];
-                Vector original_target_position = mesh->P0[target.i][target.j];
-
-                Vector l_i_j_k_l = newVectorFromPoint(current_position, target_position);
-                Vector l_0_i_j_k = newVectorFromPoint(original_position, original_target_position);
-                
-                float scal = -R[k].stiffness * scalar_product(l_0_i_j_k, l_i_j_k_l);
-                Vector tmp = multVector(scal, normalize(l_i_j_k_l));
-                // if(i==3 && j==mesh->m-1) log_debug("scal: %f, f_int %s ", scal, VectorToString(normalize(l_i_j_k_l)));
-                f_int = addVector(tmp, f_int);
-            }
-
-            printf("%s\t", VectorToString(f_int));
-            // printf("%d - %s\t", number_springs, VectorToString(f_int));
-            // free(R);
-
-            // gravity force that are applying
-            Vector f_gr = {0, -1, 0};
-
-            // Viscous damping force
-            // Vector f_dis = multVector( -1 * C_DIS, mesh->V[i][j]);
-
-            // Force from the fluid
-
-            // Global result to the mesh
-            Vector F = addVector(f_int, f_gr);
-            // Fc = addVector(F, f_dis);
-
-            acceleration[i][j] = multVector(1.0f / Mu, F); // acceleration at t+delta_t
-        }
-        printf("\n");
-    }
-
-    // log_debug("\nMatrix of acceleration at %.3f", mesh->t + delta_t);
-
-    // Update the speed and the position,
-    for(unsigned int i = 0; i<mesh->n; i++)
-    {
-        for(unsigned int j=0; j<mesh->m; j++)
-        {   
-            // printf("%s\t", VectorToString(acceleration[i][j]));
-            
-            // Fixed points 
-            if( i == 0 && j== mesh->m-1)
-            {
-                continue;
-            }
-            if( i == mesh->n - 1 && j== mesh->m-1)
-            {
-                continue;
-            }
-            
-            mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, acceleration[i][j]));
-            mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
-        }
-        // printf("\n");
-    }
-    freeMatrix(acceleration, mesh->n);
-    mesh->t += delta_t;
 }
 
 /**
- * De-allocate correctly the mesh function
+ * De-allocate correctly a mesh
  */
 void freeMesh(Mesh* mesh) {
     for (unsigned int i = 0; i < mesh->n; i++) {

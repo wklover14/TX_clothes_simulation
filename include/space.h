@@ -41,8 +41,6 @@ typedef struct Point
  * EXPORTED VARIABLES
  ************************************/
 
-extern const Vector   G;                    // Gravity
-
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES

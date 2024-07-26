@@ -1,8 +1,5 @@
 #include "../include/spring.h"
 
-const float    STIFFNESS_H      = 0.00f;                     // stiffess of a structural spring
-const float    STIFFNESS_V      = 0.02f;                     // stiffess of a shear spring  
-const float    STIFFNESS_D      = 0.00f;                     // stiffess of a flexion spring  
 
 /** 
  * Return a spring

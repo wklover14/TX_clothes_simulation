@@ -15,13 +15,14 @@
  ************************************/
 #include "space.h"
 #include "log.h"
+#include "const.h"
 #include <stdlib.h>
 
 /************************************
  * MACROS AND DEFINES
  ************************************/
 
-#define MAX_SPRINGS_PER_POINT 12
+
 /************************************
  * TYPEDEFS
  ************************************/
@@ -38,10 +39,6 @@ typedef struct
 /************************************
  * EXPORTED VARIABLES AND CONST
  ************************************/
-extern const float    STIFFNESS_H;           // stiffess of a horizontal spring
-extern const float    STIFFNESS_V;           // stiffess of a vertical spring 
-extern const float    STIFFNESS_D;           // stiffess of a diagonal spring
-
 
 /************************************
  * GLOBAL FUNCTION PROTOTYPES

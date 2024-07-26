@@ -16,13 +16,14 @@
 #include "space.h"
 #include "log.h"
 #include "spring.h"
+#include "const.h"
 #include <stdlib.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 /************************************
  * MACROS AND DEFINES
  ************************************/
-#define SPACING 1.0 //   standard spacing between two points on the same axis
 
 /************************************
  * TYPEDEFS
@@ -46,12 +47,11 @@ typedef struct Mesh
  * EXPORTED VARIABLES AND CONST
  ************************************/
 
-extern const float    Mu;                   // Mass of a point
-extern const float    C_DIS;                // Damping coefficient
-extern const float    C_VI;                 // Viscous coefficient
 /************************************
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
+
+bool isFixedPoint(unsigned int, unsigned int, Mesh* mesh);
 
 void initMesh(Mesh*, unsigned int,unsigned int);
 void updatePosition(Mesh*, float);
