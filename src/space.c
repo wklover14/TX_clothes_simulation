@@ -25,6 +25,20 @@ float norm(Vector a)
 }
 
 /**
+ * Return the vector of norm one associated
+ */
+Vector  normalize(Vector a)
+{
+    float n = norm(a);
+    if (n==0.0f)
+    {
+        return a;
+    }
+    Vector res = multVector( 1.0f/n, a);
+    return res;
+}
+
+/**
  * multVectoriply the vector a by the scalar alpha and return the new vector
  */
 Vector  multVector(float alpha, Vector a)

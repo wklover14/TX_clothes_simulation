@@ -81,7 +81,7 @@ void updatePosition(Mesh* mesh, float delta_t)
     {
         acceleration[i] = (Vector*) malloc(mesh->m * sizeof(Vector));
     }
-    // log_debug("internal forces matrix");
+    log_debug("internal forces matrix");
     for(unsigned int i = 0; i<mesh->n; i++)
     {
 
@@ -103,33 +103,25 @@ void updatePosition(Mesh* mesh, float delta_t)
             // internal forces
             Vector f_int = newVector(0.0f, 0.0f, 0.0f);     // sum of internal forces
 
-            // unsigned int number_springs = 0;
-            // Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &number_springs);
+            unsigned int number_springs = 0;
+            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &number_springs);
 
-            // for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
-            // {
-            //     Point  target                   = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
-            //     Vector target_position          = mesh->P[target.i][target.j];
-            //     Vector original_target_position = mesh->P0[target.i][target.j];
+            for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
+            {
+                Point  target                   = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
+                Vector target_position          = mesh->P[target.i][target.j];
+                Vector original_target_position = mesh->P0[target.i][target.j];
 
-            //     Vector l_i_j_k_l = newVectorFromPoint(current_position, target_position);
-            //     Vector l_0_i_j_k = newVectorFromPoint(original_position, original_target_position);
+                Vector l_i_j_k_l = newVectorFromPoint(current_position, target_position);
+                Vector l_0_i_j_k = newVectorFromPoint(original_position, original_target_position);
                 
-            //     // With Mr Badr formula
-            //     float scal = -R[k].stiffness * scalar_product(l_0_i_j_k, l_i_j_k_l) / norm(l_i_j_k_l);
-            //     Vector tmp = multVector(scal, l_i_j_k_l);
-            //     f_int = addVector(tmp, f_int);
+                float scal = -R[k].stiffness * scalar_product(l_0_i_j_k, l_i_j_k_l);
+                Vector tmp = multVector(scal, normalize(l_i_j_k_l));
+                // if(i==3 && j==mesh->m-1) log_debug("scal: %f, f_int %s ", scal, VectorToString(normalize(l_i_j_k_l)));
+                f_int = addVector(tmp, f_int);
+            }
 
-            //     // With GPT formula 
-            //     // float l_original = norm(l_0_i_j_k);
-            //     // float l_current = norm(l_i_j_k_l);
-            //     // float stretch = l_current - l_original;
-            //     // Vector unit_l = multVector( 1 / norm(l_i_j_k_l), l_i_j_k_l);
-            //     // Vector spring_force = multVector(-R[k].stiffness * stretch, unit_l);
-            //     // f_int = addVector(spring_force, f_int);
-            // }
-
-            // printf("%s\t", VectorToString(f_int));
+            printf("%s\t", VectorToString(f_int));
             // printf("%d - %s\t", number_springs, VectorToString(f_int));
             // free(R);
 
@@ -137,17 +129,17 @@ void updatePosition(Mesh* mesh, float delta_t)
             Vector f_gr = {0, -1, 0};
 
             // Viscous damping force
-            Vector f_dis = multVector( -1 * C_DIS, mesh->V[i][j]);
+            // Vector f_dis = multVector( -1 * C_DIS, mesh->V[i][j]);
 
             // Force from the fluid
 
             // Global result to the mesh
             Vector F = addVector(f_int, f_gr);
-            F = addVector(F, f_dis);
+            // Fc = addVector(F, f_dis);
 
             acceleration[i][j] = multVector(1.0f / Mu, F); // acceleration at t+delta_t
         }
-        // printf("\n");
+        printf("\n");
     }
 
     // log_debug("\nMatrix of acceleration at %.3f", mesh->t + delta_t);

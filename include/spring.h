@@ -38,9 +38,9 @@ typedef struct
 /************************************
  * EXPORTED VARIABLES AND CONST
  ************************************/
-extern const float    STIFFNESS_1;           // stiffess of a structural spring
-extern const float    STIFFNESS_2;           // stiffess of a shear spring 
-extern const float    STIFFNESS_3;           // stiffess of a flexion spring
+extern const float    STIFFNESS_H;           // stiffess of a horizontal spring
+extern const float    STIFFNESS_V;           // stiffess of a vertical spring 
+extern const float    STIFFNESS_D;           // stiffess of a diagonal spring
 
 
 /************************************

@@ -50,6 +50,7 @@ extern const Vector   G;                    // Gravity
 
 float   scalar_product(Vector , Vector );
 float   norm(Vector a);
+Vector  normalize(Vector a);
 Vector  multVector(float , Vector);
 char*   PointToString(Point);
 char*   VectorToString(Vector);

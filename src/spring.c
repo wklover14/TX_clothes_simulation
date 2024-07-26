@@ -1,8 +1,8 @@
 #include "../include/spring.h"
 
-const float    STIFFNESS_1      = 100.0f;                     // stiffess of a structural spring
-const float    STIFFNESS_2      = 100.0f;                     // stiffess of a shear spring  
-const float    STIFFNESS_3      = 100.0f;                     // stiffess of a flexion spring  
+const float    STIFFNESS_H      = 0.00f;                     // stiffess of a structural spring
+const float    STIFFNESS_V      = 0.02f;                     // stiffess of a shear spring  
+const float    STIFFNESS_D      = 0.00f;                     // stiffess of a flexion spring  
 
 /** 
  * Return a spring
@@ -35,14 +35,14 @@ void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int 
     if (i+1 < n)
     {
         Point ext_b = {i+1, j};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
+        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_H);
         (*spring_index)++;
     }
 
     if (j+1 < m)
     {
         Point ext_b = {i, j+1};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
+        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_V);
         (*spring_index)++;
     }
 
@@ -50,14 +50,14 @@ void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int 
     if (i+1 < n && j+1 < m)
     {
         Point ext_b = {i+1, j+1};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_2);
+        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_D);
         (*spring_index)++;
     }
 
     if (i-1>=0 && j+1<m)
     {
         Point ext_b = {i-1, j+1};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_2);
+        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_D);
         (*spring_index)++;
     }
 
@@ -65,14 +65,14 @@ void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int 
     if (i+2 < n) 
     {
         Point ext_b = {i+2, j};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_3);
+        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_H);
         (*spring_index)++;
     }
 
     if (j+2 < m)
     {
         Point ext_b = {i, j+2};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_3);
+        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_V);
         (*spring_index)++;
     }
 }
@@ -98,13 +98,15 @@ Spring* getPossibleSprings(unsigned int i, unsigned int j, unsigned int n, unsig
             if( i_iter >= 0 && i_iter < n && j_iter >= 0 && j_iter < m )
             {
                 Point ext_b = {i_iter, j_iter};
-                // structural springs
-                if(i_iter == i || j_iter == j){
-                    res[spring_index] = newSpring(current, ext_b, STIFFNESS_1); 
-                } 
-                else 
-                { // shear springs
-                    res[spring_index] = newSpring(current, ext_b, STIFFNESS_2); 
+                if (i_iter != i && j_iter != j) {
+                    // Diagonal springs
+                    res[spring_index] = newSpring(current, ext_b, STIFFNESS_D);
+                } else if( i_iter != i) {
+                    // Horizontal springs
+                    res[spring_index] = newSpring(current, ext_b, STIFFNESS_H);
+                } else {
+                    // Vertical springs
+                    res[spring_index] = newSpring(current, ext_b, STIFFNESS_V);
                 }
                 spring_index++;
             }
@@ -115,27 +117,27 @@ Spring* getPossibleSprings(unsigned int i, unsigned int j, unsigned int n, unsig
     if( i >= 2 ) 
     {
         Point ext_b = {i-2, j};
-        res[spring_index] = newSpring(current, ext_b, STIFFNESS_3); 
+        res[spring_index] = newSpring(current, ext_b, STIFFNESS_H); 
         spring_index++;
     }
 
     if( i+2 < n)
     {
         Point ext_b = {i+2, j};
-        res[spring_index] = newSpring(current, ext_b, STIFFNESS_3); 
+        res[spring_index] = newSpring(current, ext_b, STIFFNESS_H); 
         spring_index++;
     }
 
     if( j >= 2)
     {
         Point ext_b = {i, j-2};
-        res[spring_index] = newSpring(current, ext_b, STIFFNESS_3); 
+        res[spring_index] = newSpring(current, ext_b, STIFFNESS_V); 
         spring_index++;
     }
     if( j+2 < m)
     {
         Point ext_b = {i, j+2};
-        res[spring_index] = newSpring(current, ext_b, STIFFNESS_3); 
+        res[spring_index] = newSpring(current, ext_b, STIFFNESS_V); 
         spring_index++;
     }
 
