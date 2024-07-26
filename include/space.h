@@ -57,6 +57,7 @@ Vector  newVector(float, float, float);
 Vector  newVectorFromPoint(Vector, Vector);
 Vector  addVector(Vector, Vector);
 void    freeMatrix(Vector**, unsigned int);
+void    printMatrix(Vector**, unsigned int, unsigned int);
 #endif // !SPACE_H
 
 

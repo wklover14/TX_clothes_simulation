@@ -81,7 +81,7 @@ void updatePosition(Mesh* mesh, float delta_t)
     {
         acceleration[i] = (Vector*) malloc(mesh->m * sizeof(Vector));
     }
-    
+    // log_debug("internal forces matrix");
     for(unsigned int i = 0; i<mesh->n; i++)
     {
 
@@ -108,38 +108,33 @@ void updatePosition(Mesh* mesh, float delta_t)
 
             // for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
             // {
-            //     Point target                    = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
+            //     Point  target                   = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
             //     Vector target_position          = mesh->P[target.i][target.j];
             //     Vector original_target_position = mesh->P0[target.i][target.j];
 
             //     Vector l_i_j_k_l = newVectorFromPoint(current_position, target_position);
             //     Vector l_0_i_j_k = newVectorFromPoint(original_position, original_target_position);
                 
-            //     Vector tmp = multVector( -1 * norm(l_0_i_j_k) / norm(l_i_j_k_l) , l_i_j_k_l);
-            //     tmp = addVector(l_i_j_k_l, tmp); 
-            //     tmp = multVector(R[k].stiffness, tmp);
-
-            //     f_int = addVector(tmp, f_int);
-            // }
-
-            // for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
-            // {
-            //     Point target                    = R[k].ext_2;                       // R[k].ext_2 is the other extremity of the spring.
-            //     Vector target_position          = mesh->P[target.i][target.j];
-            //     Vector original_target_position = mesh->P0[target.i][target.j];
-
-            //     Vector l_i_j_k_l = newVectorFromPoint(current_position, target_position);
-            //     Vector l_0_i_j_k = newVectorFromPoint(original_position, original_target_position);
-
-            //     float scal = R[k].stiffness * scalar_product(l_0_i_j_k, l_i_j_k_l) / norm(l_i_j_k_l);
-                
+            //     // With Mr Badr formula
+            //     float scal = -R[k].stiffness * scalar_product(l_0_i_j_k, l_i_j_k_l) / norm(l_i_j_k_l);
             //     Vector tmp = multVector(scal, l_i_j_k_l);
             //     f_int = addVector(tmp, f_int);
+
+            //     // With GPT formula 
+            //     // float l_original = norm(l_0_i_j_k);
+            //     // float l_current = norm(l_i_j_k_l);
+            //     // float stretch = l_current - l_original;
+            //     // Vector unit_l = multVector( 1 / norm(l_i_j_k_l), l_i_j_k_l);
+            //     // Vector spring_force = multVector(-R[k].stiffness * stretch, unit_l);
+            //     // f_int = addVector(spring_force, f_int);
             // }
+
+            // printf("%s\t", VectorToString(f_int));
+            // printf("%d - %s\t", number_springs, VectorToString(f_int));
             free(R);
 
             // gravity force that are applying
-            Vector f_gr = {0.0f, -1.0f, 0.0f};
+            Vector f_gr = {0, -1, 0};
 
             // Viscous damping force
             Vector f_dis = multVector( -1 * C_DIS, mesh->V[i][j]);
@@ -152,16 +147,17 @@ void updatePosition(Mesh* mesh, float delta_t)
 
             acceleration[i][j] = multVector(1.0f / Mu, F); // acceleration at t+delta_t
         }
+        // printf("\n");
     }
 
-    log_debug("\nMatrix of acceleration at %.3f", mesh->t + delta_t);
+    // log_debug("\nMatrix of acceleration at %.3f", mesh->t + delta_t);
 
     // Update the speed and the position,
     for(unsigned int i = 0; i<mesh->n; i++)
     {
         for(unsigned int j=0; j<mesh->m; j++)
         {   
-            printf("%s\t", VectorToString(acceleration[i][j]));
+            // printf("%s\t", VectorToString(acceleration[i][j]));
             
             // Fixed points 
             if( i == 0 && j== mesh->m-1)
@@ -176,7 +172,7 @@ void updatePosition(Mesh* mesh, float delta_t)
             mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, acceleration[i][j]));
             mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
         }
-        printf("\n");
+        // printf("\n");
     }
     freeMatrix(acceleration, mesh->m);
     mesh->t += delta_t;

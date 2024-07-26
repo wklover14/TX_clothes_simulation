@@ -1,8 +1,8 @@
 #include "../include/spring.h"
 
-const float    STIFFNESS_1      = 0.01f;                     // stiffess of a structural spring
-const float    STIFFNESS_2      = 0.1f;                     // stiffess of a shear spring  
-const float    STIFFNESS_3      = 0.01f;                     // stiffess of a flexion spring  
+const float    STIFFNESS_1      = 100.0f;                     // stiffess of a structural spring
+const float    STIFFNESS_2      = 100.0f;                     // stiffess of a shear spring  
+const float    STIFFNESS_3      = 100.0f;                     // stiffess of a flexion spring  
 
 /** 
  * Return a spring
@@ -89,15 +89,14 @@ Spring* getPossibleSprings(unsigned int i, unsigned int j, unsigned int n, unsig
     Point current = {i,j};
 
     // Add springs for immediate neighbors (including diagonals)
-    for(int i_iter = i-1; i_iter <= i+1; i_iter++)
+    for(int i_iter = (int)i-1; i_iter <= (int)i+1; i_iter++) // we use the cast in int to allow negative value
     {
-        for(int j_iter = j-1; j_iter <= j+1; j_iter++)
+        for(int j_iter = (int)j -1; j_iter <=  (int)j+1; j_iter++)
         {
             if(i_iter == i && j_iter == j) continue; // skip the current point
             
             if( i_iter >= 0 && i_iter < n && j_iter >= 0 && j_iter < m )
             {
-                
                 Point ext_b = {i_iter, j_iter};
                 // structural springs
                 if(i_iter == i || j_iter == j){

@@ -6,7 +6,7 @@
 #include "space.h"
 
 
-const Vector   G                = {0.0f, 9.92f, 0.0f};      // Gravity 
+const Vector   G                = {0.0f, -9.92f, 0.0f};      // Gravity 
 
 /**
  * The scalar product between a and b
@@ -100,11 +100,23 @@ Vector  addVector(Vector a, Vector b)
 /**
  * Deallocate the memory used for a matrix with m column
  */
-freeMatrix(Vector** mesh, unsigned int m)
+void freeMatrix(Vector** mesh, unsigned int m)
 {
     for(unsigned int i=0; i < m; i++)
     {
         free(mesh[i]);
     }
     free(mesh);
+}
+
+void printMatrix(Vector **mat, unsigned int n, unsigned int m)
+{
+     for(unsigned int i = 0; i<n; i++)
+    {
+        for(unsigned int j=0; j<m; j++)
+        {
+            printf("%s\t", VectorToString(mat[i][j]));
+        }
+        printf("\n");
+    }
 }

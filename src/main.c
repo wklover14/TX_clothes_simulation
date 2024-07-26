@@ -7,7 +7,7 @@
 int main(int argc, char** argv)
 {
     Mesh* m = (Mesh*) malloc(sizeof(Mesh));
-    initMesh(m, 3, 3);
+    initMesh(m, 6, 6);
     log_info("The number of springs in this network is %d", numberOfSprings(m->n, m->m));
     
     if (m == NULL)
@@ -16,8 +16,8 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    float delta_t = 0.002f;
-    unsigned int count = 10;
+    float delta_t = 0.02f;
+    unsigned int count = 100;
     char poly_file_name[256];
     char grid_file_name[256];
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     clock_t end_time = clock();  // End the timer
     double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;  // Calculate elapsed time in seconds
     log_info("File generation completed in %.3f seconds", elapsed_time);
-
+    
     log_debug("Exiting ");
     return 0;
 }

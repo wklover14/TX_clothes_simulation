@@ -22,7 +22,7 @@
 /************************************
  * MACROS AND DEFINES
  ************************************/
-#define SPACING 0.03 //   standard spacing between two points on the same axis
+#define SPACING 1.0 //   standard spacing between two points on the same axis
 
 /************************************
  * TYPEDEFS
