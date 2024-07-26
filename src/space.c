@@ -98,11 +98,11 @@ Vector  addVector(Vector a, Vector b)
 }
 
 /**
- * Deallocate the memory used for a matrix with m column
+ * Deallocate the memory used for a matrix with n lines
  */
-void freeMatrix(Vector** mesh, unsigned int m)
+void freeMatrix(Vector** mesh, unsigned int n)
 {
-    for(unsigned int i=0; i < m; i++)
+    for(unsigned int i=0; i < n; i++)
     {
         free(mesh[i]);
     }

@@ -55,6 +55,7 @@ extern const float    C_VI;                 // Viscous coefficient
 
 void initMesh(Mesh*, unsigned int,unsigned int);
 void updatePosition(Mesh*, float);
+void freeMesh(Mesh*);
 
 void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename);
 void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_filename);

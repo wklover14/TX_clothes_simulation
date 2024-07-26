@@ -7,7 +7,7 @@
 int main(int argc, char** argv)
 {
     Mesh* m = (Mesh*) malloc(sizeof(Mesh));
-    initMesh(m, 6, 6);
+    initMesh(m, 6, 3);
     log_info("The number of springs in this network is %d", numberOfSprings(m->n, m->m));
     
     if (m == NULL)
@@ -37,6 +37,7 @@ int main(int argc, char** argv)
     double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;  // Calculate elapsed time in seconds
     log_info("File generation completed in %.3f seconds", elapsed_time);
     
+    freeMesh(m);
     log_debug("Exiting ");
     return 0;
 }

@@ -77,7 +77,7 @@ void updatePosition(Mesh* mesh, float delta_t)
     
     // The result shoul be but inside a specific Acceleration matrix, and after the computation of every forces, update other matrices
     Vector** acceleration = (Vector**) malloc(mesh->n * sizeof(Vector*));
-    for(unsigned int i = 0; i < mesh->m; i++ )
+    for(unsigned int i = 0; i < mesh->n; i++ )
     {
         acceleration[i] = (Vector*) malloc(mesh->m * sizeof(Vector));
     }
@@ -103,8 +103,8 @@ void updatePosition(Mesh* mesh, float delta_t)
             // internal forces
             Vector f_int = newVector(0.0f, 0.0f, 0.0f);     // sum of internal forces
 
-            unsigned int number_springs = 0;
-            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &number_springs);
+            // unsigned int number_springs = 0;
+            // Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &number_springs);
 
             // for(unsigned int k=0; k < number_springs; k++) // iterate through all possible springs
             // {
@@ -131,7 +131,7 @@ void updatePosition(Mesh* mesh, float delta_t)
 
             // printf("%s\t", VectorToString(f_int));
             // printf("%d - %s\t", number_springs, VectorToString(f_int));
-            free(R);
+            // free(R);
 
             // gravity force that are applying
             Vector f_gr = {0, -1, 0};
@@ -174,9 +174,26 @@ void updatePosition(Mesh* mesh, float delta_t)
         }
         // printf("\n");
     }
-    freeMatrix(acceleration, mesh->m);
+    freeMatrix(acceleration, mesh->n);
     mesh->t += delta_t;
 }
+
+/**
+ * De-allocate correctly the mesh function
+ */
+void freeMesh(Mesh* mesh) {
+    for (unsigned int i = 0; i < mesh->n; i++) {
+        free(mesh->P[i]);
+        free(mesh->V[i]);
+        free(mesh->P0[i]);
+    }
+    free(mesh->P);
+    free(mesh->V);
+    free(mesh->P0);
+    free(mesh->springs);
+    free(mesh);
+}
+
 
 /** 
  * Convert a mesh into a set of points and lines in a vtk file

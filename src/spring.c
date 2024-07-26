@@ -39,7 +39,7 @@ void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int 
         (*spring_index)++;
     }
 
-    if (j+1 < n)
+    if (j+1 < m)
     {
         Point ext_b = {i, j+1};
         springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
