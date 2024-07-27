@@ -64,13 +64,97 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
 }
 
 
+void applyGravity(Mesh* mesh, float delta_t)
+{
+    Vector f_gr = {0.0f, -1.80f, 0.0f};
+
+    for(unsigned int i=0; i<mesh->n; i++)
+    {
+        for(unsigned int j=0; j<mesh->m; j++)
+        {
+            mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, f_gr));
+            mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
+        }
+    }
+}
+
+
 /**
  * Compute the next position of the mesh point.
  * For now, we ignore the fluid forces
  */
 void updatePosition(Mesh* mesh, float delta_t)
 {
-    
+    // Init
+    Vector** acc  = (Vector**) malloc(mesh->n * sizeof(Vector*)); // acceleration matrex
+    for(unsigned int i=0; i < mesh->n; i++)
+    {
+        acc[i] = (Vector*) malloc(mesh->m * sizeof(Vector));
+    }
+
+    Vector f_gr = {0.0f, -9.81f, 0.0f}; // Gravity
+
+    for(unsigned int i=0; i < mesh->n; i++) // For each point,
+    {
+        for(unsigned int j=0; j < mesh->m; j++)
+        {
+            if(isFixedPoint(i, j, mesh))
+            {
+                continue; 
+            }
+            // compute force F at i,j
+            
+            Vector current_position  = mesh->P[i][j];
+            Vector original_position = mesh->P0[i][j]; 
+
+            // Internal forces
+            Vector f_int = {0.0f, 0.0f, 0.0f};
+            
+            unsigned int count = 0;
+            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &count);
+
+            for(unsigned int k=0; k<count; k++)
+            {
+                Point target = R[k].ext_2;
+                Vector target_current_position = mesh->P[target.i][target.j]; // P[k][l] 
+                Vector target_original_position = mesh->P0[target.i][target.j]; // P0[k][l]
+
+                Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position); // vector representing the spring
+
+                float current_spring_len = norm(l_i_j_k_l);
+                float original_spring_len = norm(newVectorFromPoint(original_position, target_original_position));
+
+                float scal = - R[k].stiffness * (current_spring_len - original_spring_len);
+                Vector direction = normalize(l_i_j_k_l);
+
+                f_int = addVector(multVector(scal, direction),f_int);
+            }
+            free(R);
+
+            // Viscous damping force
+            Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
+
+            Vector F = addVector(f_gr, f_int);
+            F = addVector(F, f_dis);
+
+            acc[i][j] = multVector( 1/Mu, F);
+        }
+    }
+
+    // update the position of points based on the acceleartion
+    for (unsigned int i = 0; i < mesh->n; i++)
+    {
+        for (unsigned int j = 0; j < mesh->m; j++)
+        {
+            if(isFixedPoint(i,j,mesh)){
+                continue;
+            }
+            mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, acc[i][j]));
+            mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
+        }
+        
+    }
+    freeMatrix(acc, mesh->n);
 }
 
 /**
