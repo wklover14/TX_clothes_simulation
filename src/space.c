@@ -132,3 +132,17 @@ void printMatrix(Vector **mat, unsigned int n, unsigned int m)
         printf("\n");
     }
 }
+
+
+/**
+ * Return a mtrix of n lines and m colums
+ */
+Vector** getMatrix(unsigned int n, unsigned int m)
+{
+    Vector** res = (Vector**) malloc(n * sizeof(Vector*));
+    for(unsigned int i=0; i<n; i++)
+    {
+        res[i] = (Vector*) malloc(m * sizeof(Vector));
+    }
+    return res;
+}

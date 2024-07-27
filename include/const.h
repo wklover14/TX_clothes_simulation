@@ -28,4 +28,7 @@
 #define     STIFFNESS_V                 100.01f                          // stiffess of a vertical spring 
 #define     STIFFNESS_D                 100.01f                          // stiffess of a diagonal spring
 
+// FIXED POINT
+#define     RADIUS                      1.0f                            // For the table, the radius of the circle containing fixed points
+
 #endif // !CONST_H

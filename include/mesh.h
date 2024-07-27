@@ -43,6 +43,11 @@ typedef struct Mesh
     Spring*         springs;    // list of springs of the mesh, refered as R in the litterature
 }Mesh;
 
+typedef enum {
+    FLAG, // Rectangle in the x,y plan. Fixed points are the two upper extremity of the rectangle with y vertical. 
+    TABLE // Rectan
+} meshType;
+
 /************************************
  * EXPORTED VARIABLES AND CONST
  ************************************/
@@ -51,13 +56,13 @@ typedef struct Mesh
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
-bool isFixedPoint(unsigned int, unsigned int, Mesh* mesh);
+bool isFixedPoint(unsigned int, unsigned int, Mesh* mesh, meshType);
 
-void initMesh(Mesh*, unsigned int,unsigned int);
-void updatePosition(Mesh*, float);
+void initMesh(Mesh*, unsigned int,unsigned int, meshType);
+void updatePosition(Mesh*, float, meshType);
 void freeMesh(Mesh*);
 
-void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename);
-void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_filename);
+void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename);
+void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename);
 
 #endif // !MESH_H
