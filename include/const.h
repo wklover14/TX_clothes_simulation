@@ -24,8 +24,8 @@
 
 // SPRINGS CONST
 #define     MAX_SPRINGS_PER_POINT       12
-#define     STIFFNESS_H                 10.01f                          // stiffess of a horizontal spring
-#define     STIFFNESS_V                 10.01f                          // stiffess of a vertical spring 
-#define     STIFFNESS_D                 10.01f                          // stiffess of a diagonal spring
+#define     STIFFNESS_H                 100.01f                          // stiffess of a horizontal spring
+#define     STIFFNESS_V                 100.01f                          // stiffess of a vertical spring 
+#define     STIFFNESS_D                 100.01f                          // stiffess of a diagonal spring
 
 #endif // !CONST_H
