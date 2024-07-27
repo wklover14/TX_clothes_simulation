@@ -46,17 +46,19 @@ typedef struct Point
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
-float   scalar_product(Vector , Vector );
-float   norm(Vector a);
-Vector  normalize(Vector a);
-Vector  multVector(float , Vector);
-Vector  newVector(float, float, float);
-Vector  newVectorFromPoint(Vector, Vector);
-Vector  addVector(Vector, Vector);
-char*   VectorToString(Vector);
-char*   PointToString(Point);
-void    freeMatrix(Vector**, unsigned int);
-void    printMatrix(Vector**, unsigned int, unsigned int);
+float       scalar_product(Vector , Vector );
+float       norm(Vector a);
+Vector      normalize(Vector a);
+Vector      multVector(float , Vector);
+Vector      newVector(float, float, float);
+Vector      newVectorFromPoint(Vector, Vector);
+Vector      addVector(Vector, Vector);
+char*       VectorToString(Vector);
+char*       PointToString(Point);
+void        freeMatrix(Vector**, unsigned int);
+void        printMatrix(Vector**, unsigned int, unsigned int);
+Vector**    getMatrix(unsigned int, unsigned int);
+
 #endif // !SPACE_H
 
 

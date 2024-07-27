@@ -3,14 +3,29 @@
 /**
  * Return true if a point is fixed and false if not
  */
-bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh) {
-    return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
+bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
+    Vector origin = {0.0f, 0.0f, 0.0f};
+
+    switch (type)
+    {
+        case FLAG: // only the two top points
+            return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
+            
+        case TABLE: // The circle of center
+                Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
+                float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
+                return distance <= RADIUS;
+            
+        default:
+            log_info("Type not handled");
+            exit(EXIT_FAILURE);
+    }
 }
 
 /**
- * Correctly allocate all attributes of a mesh, it fails if the mesh provided is NULL
+ * Correctly allocate all attributes of a flag mesh, it fails if the mesh provided is NULL
  */
-void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
+void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
 {
     if(mesh == NULL)
     {
@@ -28,9 +43,9 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
     mesh->m = m;
     mesh->t = 0.0f; // the initial is zero    
 
-    mesh->P     = (Vector**) malloc(n * sizeof(Vector*));
-    mesh->P0    = (Vector**) malloc(n * sizeof(Vector*));
-    mesh->V     = (Vector**) malloc(n * sizeof(Vector*));
+    mesh->P     = getMatrix(n, m);
+    mesh->P0    = getMatrix(n, m);
+    mesh->V     = getMatrix(n, m);
 
     unsigned int N  = numberOfSprings(n, m); // total number of springs in the mesh
     mesh->springs   = (Spring*) malloc(N * sizeof(Spring));
@@ -39,11 +54,7 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
     unsigned int spring_count = 0;
 
     for(unsigned int i = 0; i < n ; i++) 
-    {
-        mesh->P[i]  = (Vector*) malloc(m * sizeof(Vector));
-        mesh->P0[i] = (Vector*) malloc(m * sizeof(Vector));
-        mesh->V[i]  = (Vector*) malloc(m * sizeof(Vector));
-        
+    {   
         for(unsigned int j=0; j < m; j++)
         {
             /** 
@@ -52,30 +63,32 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
              * 
              * For now we give them the same position as their coordinate on the grid, with an initial velocity of zero
              * */ 
-            mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
-            mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
-            mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
+            switch (type)
+            {
+                case FLAG: // rectangle in the x,y plan
+                    mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+                    mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+                    mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
+                    break;
 
+                case TABLE: // rectangle in the x,z plan
+                    mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
+                    mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
+                    mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
+                    break;
+
+                default:
+                    log_error("Type of mesh not handled");
+                    freeMesh(mesh);
+                    exit(EXIT_FAILURE);
+            }
             fillSprings(mesh->springs, &spring_count, i, j, n, m);
         } 
     }
 
     log_info("Mesh Created!");
-}
-
-
-void applyGravity(Mesh* mesh, float delta_t)
-{
-    Vector f_gr = {0.0f, -1.80f, 0.0f};
-
-    for(unsigned int i=0; i<mesh->n; i++)
-    {
-        for(unsigned int j=0; j<mesh->m; j++)
-        {
-            mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, f_gr));
-            mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
-        }
-    }
+    Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
+    log_info("center = %s", VectorToString(center));
 }
 
 
@@ -83,14 +96,10 @@ void applyGravity(Mesh* mesh, float delta_t)
  * Compute the next position of the mesh point.
  * For now, we ignore the fluid forces
  */
-void updatePosition(Mesh* mesh, float delta_t)
+void updatePosition(Mesh* mesh, float delta_t, meshType type)
 {
     // Init
-    Vector** acc  = (Vector**) malloc(mesh->n * sizeof(Vector*)); // acceleration matrex
-    for(unsigned int i=0; i < mesh->n; i++)
-    {
-        acc[i] = (Vector*) malloc(mesh->m * sizeof(Vector));
-    }
+    Vector** acc  = getMatrix(mesh->n, mesh->m); // acceleration matrex
 
     Vector f_gr = {0.0f, -9.81f, 0.0f}; // Gravity
 
@@ -98,7 +107,7 @@ void updatePosition(Mesh* mesh, float delta_t)
     {
         for(unsigned int j=0; j < mesh->m; j++)
         {
-            if(isFixedPoint(i, j, mesh))
+            if(isFixedPoint(i, j, mesh, type))
             {
                 continue; 
             }
@@ -146,7 +155,7 @@ void updatePosition(Mesh* mesh, float delta_t)
     {
         for (unsigned int j = 0; j < mesh->m; j++)
         {
-            if(isFixedPoint(i,j,mesh)){
+            if(isFixedPoint(i,j,mesh, type)){
                 continue;
             }
             mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, acc[i][j]));
@@ -177,7 +186,7 @@ void freeMesh(Mesh* mesh) {
 /** 
  * Convert a mesh into a set of points and lines in a vtk file
  */ 
-void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename)
+void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename)
 {
     FILE* file = fopen(output_filename, "w");
     if (file == NULL) {
@@ -218,7 +227,7 @@ void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename)
 /**
  * Convert a Mesh into a a grid that can be used as surface easily.
  */
-void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_filename)
+void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename)
 {
     FILE* file = fopen(output_filename, "w");
     if (file == NULL) {
