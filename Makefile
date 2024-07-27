@@ -6,6 +6,7 @@ SRC_DIR = src
 BUILD_DIR = build
 BIN_DIR = bin
 INCLUDE_DIR = include
+VTK_DIR = vtk_grid vtk_poly
 
 # Executable name
 TARGET = $(BIN_DIR)/app
@@ -31,7 +32,7 @@ all: $(TARGET)
 
 # Build the target executable
 $(TARGET): $(OBJ_FILES)
-	mkdir -p $(BIN_DIR)
+	mkdir -p $(BIN_DIR) $(VTK_DIR)
 	$(CC) $(OBJ_FILES) -o $(TARGET) $(LDFLAGS)
 
 # Build object files
@@ -41,7 +42,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Clean up build and bin directories
 clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -rf $(BUILD_DIR) $(BIN_DIR) $(VTK_DIR)
 
 # Run the application
 run: $(TARGET)

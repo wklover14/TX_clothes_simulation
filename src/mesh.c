@@ -1,12 +1,15 @@
 #include "../include/mesh.h"
 
-const float    Mu               = 0.02f;                    // Mass of a point
-const float    C_DIS            = 0.04f;                    // Damping coefficient
-const float    C_VI             = 0.023f;                   // Viscous coefficient
-const Vector   G                = {0.0f, 9.92f, 0.0f};      // Gravity
-const float    STIFFNESS_1      = 1.0f;                     // Stiffess of a spring of lenght 1
-const float    STIFFNESS_2      = 2.0f;                     // stiffess of a spring of lenght 2   
+/**
+ * Return true if a point is fixed and false if not
+ */
+bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh) {
+    return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
+}
 
+/**
+ * Correctly allocate all attributes of a mesh, it fails if the mesh provided is NULL
+ */
 void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
 {
     if(mesh == NULL)
@@ -25,20 +28,21 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
     mesh->m = m;
     mesh->t = 0.0f; // the initial is zero    
 
-    mesh->P = (Vector**) malloc(n * sizeof(Vector*));
-    mesh->V = (Vector**) malloc(n * sizeof(Vector*));
-    mesh->A = (Vector**) malloc(n * sizeof(Vector*));
+    mesh->P     = (Vector**) malloc(n * sizeof(Vector*));
+    mesh->P0    = (Vector**) malloc(n * sizeof(Vector*));
+    mesh->V     = (Vector**) malloc(n * sizeof(Vector*));
 
-    unsigned int N   = numberOfSprings(n, m); // total number of springs in the mesh
+    unsigned int N  = numberOfSprings(n, m); // total number of springs in the mesh
     mesh->springs   = (Spring*) malloc(N * sizeof(Spring));
-
-    unsigned int spring_index = 0; // index to iterate through the springs list
+    
+    Vector origin = {0.0f, 0.0f, 0.0f};
+    unsigned int spring_count = 0;
 
     for(unsigned int i = 0; i < n ; i++) 
     {
-        mesh->P[i] = (Vector*) malloc(m * sizeof(Vector));
-        mesh->V[i] = (Vector*) malloc(m * sizeof(Vector));
-        mesh->A[i] = (Vector*) malloc(m * sizeof(Vector));
+        mesh->P[i]  = (Vector*) malloc(m * sizeof(Vector));
+        mesh->P0[i] = (Vector*) malloc(m * sizeof(Vector));
+        mesh->V[i]  = (Vector*) malloc(m * sizeof(Vector));
         
         for(unsigned int j=0; j < m; j++)
         {
@@ -48,99 +52,131 @@ void initMesh(Mesh* mesh,unsigned int n,unsigned int m)
              * 
              * For now we give them the same position as their coordinate on the grid, with an initial velocity of zero
              * */ 
-            mesh->P[i][j] = newVector(i, j, 0.0f);
-            mesh->V[i][j] = newVector(0.0f, 0.0f, 0.0f);
-            mesh->A[i][j] = newVector(0.0f, 0.0f, 0.0f);
+            mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+            mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+            mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
 
-            fillSprings(mesh->springs, &spring_index, i, j, n, m);
+            fillSprings(mesh->springs, &spring_count, i, j, n, m);
         } 
     }
 
     log_info("Mesh Created!");
 }
 
-Vector** computeForce(Mesh* m)
+
+void applyGravity(Mesh* mesh, float delta_t)
 {
-    //TODO: test
-    return NULL;
+    Vector f_gr = {0.0f, -1.80f, 0.0f};
+
+    for(unsigned int i=0; i<mesh->n; i++)
+    {
+        for(unsigned int j=0; j<mesh->m; j++)
+        {
+            mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, f_gr));
+            mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
+        }
+    }
 }
 
-Vector** computeAcceleration(Mesh* m, float delta_t)
+
+/**
+ * Compute the next position of the mesh point.
+ * For now, we ignore the fluid forces
+ */
+void updatePosition(Mesh* mesh, float delta_t)
 {
-    return NULL;
+    // Init
+    Vector** acc  = (Vector**) malloc(mesh->n * sizeof(Vector*)); // acceleration matrex
+    for(unsigned int i=0; i < mesh->n; i++)
+    {
+        acc[i] = (Vector*) malloc(mesh->m * sizeof(Vector));
+    }
+
+    Vector f_gr = {0.0f, -9.81f, 0.0f}; // Gravity
+
+    for(unsigned int i=0; i < mesh->n; i++) // For each point,
+    {
+        for(unsigned int j=0; j < mesh->m; j++)
+        {
+            if(isFixedPoint(i, j, mesh))
+            {
+                continue; 
+            }
+            // compute force F at i,j
+            
+            Vector current_position  = mesh->P[i][j];
+            Vector original_position = mesh->P0[i][j]; 
+
+            // Internal forces
+            Vector f_int = {0.0f, 0.0f, 0.0f};
+            
+            unsigned int count = 0;
+            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &count);
+
+            for(unsigned int k=0; k<count; k++)
+            {
+                Point target = R[k].ext_2;
+                Vector target_current_position = mesh->P[target.i][target.j]; // P[k][l] 
+                Vector target_original_position = mesh->P0[target.i][target.j]; // P0[k][l]
+
+                Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position); // vector representing the spring
+
+                float current_spring_len = norm(l_i_j_k_l);
+                float original_spring_len = norm(newVectorFromPoint(original_position, target_original_position));
+
+                float scal = - R[k].stiffness * (current_spring_len - original_spring_len);
+                Vector direction = normalize(l_i_j_k_l);
+
+                f_int = addVector(multVector(scal, direction),f_int);
+            }
+            free(R);
+
+            // Viscous damping force
+            Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
+
+            Vector F = addVector(f_gr, f_int);
+            F = addVector(F, f_dis);
+
+            acc[i][j] = multVector( 1/Mu, F);
+        }
+    }
+
+    // update the position of points based on the acceleartion
+    for (unsigned int i = 0; i < mesh->n; i++)
+    {
+        for (unsigned int j = 0; j < mesh->m; j++)
+        {
+            if(isFixedPoint(i,j,mesh)){
+                continue;
+            }
+            mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, acc[i][j]));
+            mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
+        }
+        
+    }
+    freeMatrix(acc, mesh->n);
 }
 
-Vector** computeVelocity(Mesh* m, float delta_t)
-{
-    return NULL;
+/**
+ * De-allocate correctly a mesh
+ */
+void freeMesh(Mesh* mesh) {
+    for (unsigned int i = 0; i < mesh->n; i++) {
+        free(mesh->P[i]);
+        free(mesh->V[i]);
+        free(mesh->P0[i]);
+    }
+    free(mesh->P);
+    free(mesh->V);
+    free(mesh->P0);
+    free(mesh->springs);
+    free(mesh);
 }
 
-Spring newSpring(Point ext_a, Point ext_b, float stiff){
-    Spring temp_spring = {ext_a, ext_b, stiff};
-    return temp_spring;
-}
 
-// Compute the number of springs needed for the grid n lines, m columns
-unsigned int numberOfSprings(unsigned int n,unsigned int m)
-{
-    unsigned int n_shear     = 2 * (n - 1) * (m - 1);               // number of springs on the diagonale, HINT: each point on the column has two diagonals except for the last and the first point.
-    unsigned int n_flexion   = (m - 2) * n + (n - 2) * m;           // number of  2-lenght springs, HINT: each line has n-2 springs of len 2, m-2 for each column
-    unsigned int n_struct    = (2 * n - 1) * (m - 1) + (n - 1);     // number of strings that make a square, HINT: for each point of a column we consider two springs forming a right angle (except for the last one), 
-                                                                    // the point for the last column has only one spring to consider 
-    return n_shear + n_flexion + n_struct ;                         // total number of springs in the mesh
-}
-
-// Add to the table springs all the possible springs from the index i,j in a n*m
-void fillSprings(Spring* springs, unsigned int* spring_index, int i, int j, int n, int m)
-{
-    Point current = {i, j};
-
-    // Structural Springs i+1, j and i,j+1
-    if (i+1 < n)
-    {
-        Point ext_b = {i+1, j};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
-        (*spring_index)++;
-    }
-
-    if (j+1 < n)
-    {
-        Point ext_b = {i, j+1};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
-        (*spring_index)++;
-    }
-
-    // Shear Springs i+1, j+1 and structural spring
-    if (i+1 < n && j+1 < m)
-    {
-        Point ext_b = {i+1, j+1};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
-        (*spring_index)++;
-    }
-    if (i-1>=0 && j+1<m)
-    {
-        Point ext_b = {i-1, j+1};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
-        (*spring_index)++;
-    }
-
-    // Flexion springs i+2,j and i,j+2
-    if (i+2 < n) 
-    {
-        Point ext_b = {i+2, j};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
-        (*spring_index)++;
-    }
-
-    if (j+2 < m)
-    {
-        Point ext_b = {i, j+2};
-        springs[*spring_index] = newSpring(current, ext_b, STIFFNESS_1);
-        (*spring_index)++;
-    }
-}
-
-// Convert a mesh to set point of points and lines in a vtk file
+/** 
+ * Convert a mesh into a set of points and lines in a vtk file
+ */ 
 void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename)
 {
     FILE* file = fopen(output_filename, "w");
@@ -173,14 +209,15 @@ void convert_mesh_to_vtk(const Mesh *mesh, const char *output_filename)
         // Convert grid coordinates (i, j) to point indices
         unsigned int id1 = mesh->springs[k].ext_1.i * mesh->m + mesh->springs[k].ext_1.j;
         unsigned int id2 = mesh->springs[k].ext_2.i * mesh->m + mesh->springs[k].ext_2.j;
-        fprintf(file, "2 %u %u\n", id1, id2);
+        fprintf(file, "2 %d %d\n", id1, id2);
     }
 
     fclose(file);
-    log_info("Output file %s created", output_filename);
 }
 
-// Convert a Mesh into a a grid that can be used as surface easily.
+/**
+ * Convert a Mesh into a a grid that can be used as surface easily.
+ */
 void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_filename)
 {
     FILE* file = fopen(output_filename, "w");
@@ -212,7 +249,7 @@ void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_f
             unsigned int id2 = i * mesh->m + (j + 1);
             unsigned int id3 = (i + 1) * mesh->m + j;
             unsigned int id4 = (i + 1) * mesh->m + (j + 1);
-            fprintf(file, "4 %u %u %u %u\n", id1, id2, id4, id3);
+            fprintf(file, "4 %d %d %d %d\n", id1, id2, id4, id3);
         }
     }
 
@@ -220,7 +257,7 @@ void convert_mesh_to_unstructure_grid_vtk(const Mesh *mesh, const char *output_f
     // VTK_QUAD = 9
     fprintf(file, "CELL_TYPES %u\n", total_cells);
     for (unsigned int k = 0; k < total_cells; k++) {
-        fprintf(file, "9\n");
+        fprintf(file, "7\n");
     }
 
     fclose(file);

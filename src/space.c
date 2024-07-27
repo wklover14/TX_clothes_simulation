@@ -5,6 +5,7 @@
 #include <string.h>
 #include "space.h"
 
+
 /**
  * The scalar product between a and b
  */
@@ -18,13 +19,27 @@ float  scalar_product(Vector a, Vector b)
  */
 float norm(Vector a)
 {
-    return sqrt( pow(a.x, 2) + pow(a.y, 2) + pow(a.z, 2) );
+    return sqrt( a.x * a.x + a.y * a.y + a.z * a.z );
 }
 
 /**
- * Multiply the vector a by the scalar alpha and return the new vector
+ * Return the vector of norm one associated
  */
-Vector  mult(float alpha, Vector a)
+Vector  normalize(Vector a)
+{
+    float n = norm(a);
+    if (n==0.0f)
+    {
+        return a;
+    }
+    Vector res = multVector( 1.0f/n, a);
+    return res;
+}
+
+/**
+ * multVectoriply the vector a by the scalar alpha and return the new vector
+ */
+Vector  multVector(float alpha, Vector a)
 {
     Vector res;
     res.x = alpha * a.x;
@@ -74,4 +89,46 @@ Vector newVector(float x, float y, float z)
 {
     Vector tmp = {x, y, z};
     return tmp;
+}
+
+/**
+ * Return the vector ->ab
+ */
+Vector  newVectorFromPoint(Vector a, Vector b)
+{
+    Vector res = newVector(b.x - a.x, b.y - a.y, b.z - a.z);
+    return res;
+}
+
+/**
+ * Return a + b
+ */
+Vector  addVector(Vector a, Vector b)
+{
+    Vector res = {a.x + b.x, a.y + b.y, a.z + b.z};
+    return res;
+}
+
+/**
+ * Deallocate the memory used for a matrix with n lines
+ */
+void freeMatrix(Vector** mesh, unsigned int n)
+{
+    for(unsigned int i=0; i < n; i++)
+    {
+        free(mesh[i]);
+    }
+    free(mesh);
+}
+
+void printMatrix(Vector **mat, unsigned int n, unsigned int m)
+{
+     for(unsigned int i = 0; i<n; i++)
+    {
+        for(unsigned int j=0; j<m; j++)
+        {
+            printf("%s\t", VectorToString(mat[i][j]));
+        }
+        printf("\n");
+    }
 }
