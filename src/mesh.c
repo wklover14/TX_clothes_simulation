@@ -23,6 +23,36 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
 }
 
 /**
+ * Compute the normal of the Mesh surface at i,j using its neighbors
+ */
+Vector calculateNormal(Mesh *mesh, int i, int j) {
+    Vector v1, v2;
+    
+    // Ensure the point is not at the boundary to avoid accessing out-of-bounds indices
+    if (i > 0 && j > 0 && i < mesh->n - 1 && j < mesh->m - 1) {
+        v1 = newVectorFromPoint(mesh->P[i][j], mesh->P[i + 1][j]);
+        v2 = newVectorFromPoint(mesh->P[i][j], mesh->P[i][j + 1]);
+    } else {
+        // Handle boundary cases, you might need special handling here
+        // For simplicity, we'll return a default normal
+        return newVector(0.0f, 1.0f, 0.0f); // Default normal vector pointing upwards
+    }
+    
+    Vector normal = crossProduct(v1, v2);
+    return normalize(normal);
+}
+
+/**
+ * Force due to the fluid
+ */
+Vector computeFluidForce(Vector normal, Vector u_fluid, Vector v) {
+    Vector diff = newVectorFromPoint(u_fluid, v);
+    float dot_product = scalar_product(normal, diff);
+    Vector force = multVector(C_VI * dot_product, normal);
+    return force;
+}
+
+/**
  * Correctly allocate all attributes of a flag mesh, it fails if the mesh provided is NULL
  */
 void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
@@ -103,6 +133,8 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
 
     Vector f_gr = {0.0f, -9.81f, 0.0f}; // Gravity
 
+    Vector u_fluid = {0.0f, 0.0f, 1.0f}; // Fluid velocity
+
     for(unsigned int i=0; i < mesh->n; i++) // For each point,
     {
         for(unsigned int j=0; j < mesh->m; j++)
@@ -113,6 +145,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
             }
             // compute force F at i,j
             
+            
             Vector current_position  = mesh->P[i][j];
             Vector original_position = mesh->P0[i][j]; 
 
@@ -122,13 +155,13 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
             unsigned int count = 0;
             Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &count);
 
-            for(unsigned int k=0; k<count; k++)
+            for(unsigned int k=0; k<count; k++) // Iterate through all the springs connected to sum their forces
             {
-                Point target = R[k].ext_2;
-                Vector target_current_position = mesh->P[target.i][target.j]; // P[k][l] 
-                Vector target_original_position = mesh->P0[target.i][target.j]; // P0[k][l]
+                Point target = R[k].ext_2;                                                                              // Point connected through the spring K
+                Vector target_current_position = mesh->P[target.i][target.j];                                           // P[k][l] 
+                Vector target_original_position = mesh->P0[target.i][target.j];                                         // P0[k][l]
 
-                Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position); // vector representing the spring
+                Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position);                       // vector representing the spring
 
                 float current_spring_len = norm(l_i_j_k_l);
                 float original_spring_len = norm(newVectorFromPoint(original_position, target_original_position));
@@ -136,15 +169,21 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
                 float scal = - R[k].stiffness * (current_spring_len - original_spring_len);
                 Vector direction = normalize(l_i_j_k_l);
 
-                f_int = addVector(multVector(scal, direction),f_int);
+                f_int = addVector(multVector(scal, direction),f_int);                                                   // Hooke's Law
             }
             free(R);
 
             // Viscous damping force
             Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
 
+            // fluid force
+            Vector normal = calculateNormal(mesh, i, j);
+            Vector f_fluid = computeFluidForce(normal, u_fluid, mesh->V[i][j]);
+
+
             Vector F = addVector(f_gr, f_int);
             F = addVector(F, f_dis);
+            // F = addVector(F, f_fluid);
 
             acc[i][j] = multVector( 1/Mu, F);
         }

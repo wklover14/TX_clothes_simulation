@@ -20,7 +20,7 @@
 // MESH CONST
 #define     Mu                          1.00f                          // Mass of a point
 #define     C_DIS                       0.99f                          // Damping coefficient
-#define     C_VI                        0.023f                         // Viscous coefficient
+#define     C_VI                        0.23f                         // Viscous coefficient
 
 // SPRINGS CONST
 #define     MAX_SPRINGS_PER_POINT       12

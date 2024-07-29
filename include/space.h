@@ -53,6 +53,7 @@ Vector      multVector(float , Vector);
 Vector      newVector(float, float, float);
 Vector      newVectorFromPoint(Vector, Vector);
 Vector      addVector(Vector, Vector);
+Vector      crossProduct(Vector, Vector);
 char*       VectorToString(Vector);
 char*       PointToString(Point);
 void        freeMatrix(Vector**, unsigned int);

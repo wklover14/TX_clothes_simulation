@@ -146,3 +146,15 @@ Vector** getMatrix(unsigned int n, unsigned int m)
     }
     return res;
 }
+
+/**
+ * Return the cross product of a and b
+ */
+Vector crossProduct(Vector a, Vector b) {
+    Vector result = {
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    };
+    return result;
+}

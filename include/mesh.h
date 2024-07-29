@@ -62,6 +62,9 @@ void initMesh(Mesh*, unsigned int,unsigned int, meshType);
 void updatePosition(Mesh*, float, meshType);
 void freeMesh(Mesh*);
 
+Vector calculateNormal(Mesh* mesh, int i, int j);
+Vector computeFluidForce(Vector normal, Vector u_fluid, Vector v);
+
 void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename);
 void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename);
 
