@@ -15,12 +15,12 @@
  ************************************/
 
 // SPACE CONST
-#define     SPACING                     0.2f                           //   standard spacing between two points on the same axis
+#define     SPACING                     0.01f                           //   standard spacing between two points on the same axis
 
 // MESH CONST
-#define     Mu                          1.00f                          // Mass of a point
-#define     C_DIS                       0.99f                          // Damping coefficient
-#define     C_VI                        0.023f                         // Viscous coefficient
+#define     Mu                          1.00f                           // Mass of a point
+#define     C_DIS                       0.0f                            // Damping coefficient
+#define     C_VI                        0.0f                             // Viscous coefficient
 
 // SPRINGS CONST
 #define     MAX_SPRINGS_PER_POINT       12
@@ -29,6 +29,6 @@
 #define     STIFFNESS_D                 100.01f                          // stiffess of a diagonal spring
 
 // FIXED POINT
-#define     RADIUS                      1.0f                            // For the table, the radius of the circle containing fixed points
+#define     RADIUS                      0.025f                            // For the table, the radius of the circle containing fixed points
 
 #endif // !CONST_H

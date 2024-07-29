@@ -7,12 +7,12 @@
 int main(int argc, char** argv)
 {
     Mesh* m = (Mesh*) malloc(sizeof(Mesh));
-    meshType type = TABLE;
-    initMesh(m, 20, 20, type);
+        meshType type = TABLE;
+        initMesh(m, 50, 50, type);
     log_info("The number of springs in this network is %d", numberOfSprings(m->n, m->m));
 
     float delta_t = 0.02f;
-    unsigned int count = 250;
+    unsigned int count = 400;
     char poly_file_name[256];
     char grid_file_name[256];
 
