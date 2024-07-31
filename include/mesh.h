@@ -57,8 +57,9 @@ typedef enum {
  ************************************/
 
 bool isFixedPoint(unsigned int, unsigned int, Mesh* mesh, meshType);
+void customs_params(meshType type);
 
-void initMesh(Mesh*, unsigned int,unsigned int, meshType);
+void initMesh(Mesh*, meshType);
 void updatePosition(Mesh*, float, meshType);
 void freeMesh(Mesh*);
 

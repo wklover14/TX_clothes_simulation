@@ -12,9 +12,9 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
             return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
             
         case TABLE_CLOTH: // The circle of center
-                Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
-                float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
-                return distance <= RADIUS;
+            Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
+            float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
+            return distance <= RADIUS;
             
         default:
             log_error("Type not handled");
@@ -23,9 +23,31 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
 }
 
 /**
+ * Ajust params according to the type.
+ */
+void customs_params(meshType type)
+{
+    switch (type)
+    {
+    case CURTAIN:
+        // default params are OK.
+        break;
+
+    case TABLE_CLOTH:
+        //default params are also ok
+        break;
+
+    default:
+        // if you want customs params for a new type : add it here
+        break;
+    }
+}
+
+
+/**
  * Correctly allocate all attributes of a flag mesh, it fails if the mesh provided is NULL
  */
-void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
+void initMesh(Mesh* mesh, meshType type)
 {
     if(mesh == NULL)
     {
@@ -33,35 +55,33 @@ void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
         return;
     } 
 
-    if(n == 0 || m == 0)
-    {
-        log_error("Bad parameters, neither n nor m can be negative or null");
-        return;
-    }
+    /**  
+     *   customs params
+     */
+    customs_params(type);
 
-    mesh->n = n;
-    mesh->m = m;
+    
+    mesh->n = N;
+    mesh->m = M;
     mesh->t = 0.0f; // the initial is zero    
 
-    mesh->P     = getMatrix(n, m);
-    mesh->P0    = getMatrix(n, m);
-    mesh->V     = getMatrix(n, m);
+    mesh->P     = getMatrix(N, M);
+    mesh->P0    = getMatrix(N, M);
+    mesh->V     = getMatrix(N, M);
 
-    unsigned int N  = numberOfSprings(n, m); // total number of springs in the mesh
-    mesh->springs   = (Spring*) malloc(N * sizeof(Spring));
+    unsigned int nb_springs  = numberOfSprings(N, M); // total number of springs in the mesh
+    mesh->springs   = (Spring*) malloc(nb_springs * sizeof(Spring));
     
     Vector origin = {0.0f, 0.0f, 0.0f};
     unsigned int spring_count = 0;
 
-    for(unsigned int i = 0; i < n ; i++) 
+    for(unsigned int i = 0; i < N ; i++) 
     {   
-        for(unsigned int j=0; j < m; j++)
+        for(unsigned int j=0; j < M; j++)
         {
             /** 
              * Initialize the position of the point in the space here.
-             * mesh->P[i][j] = newVector(x, y, z);
-             * 
-             * For now we give them the same position as their coordinate on the grid, with an initial velocity of zero
+             *
              * */ 
             switch (type)
             {
@@ -82,7 +102,7 @@ void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
                     freeMesh(mesh);
                     exit(EXIT_FAILURE);
             }
-            fillSprings(mesh->springs, &spring_count, i, j, n, m);
+            fillSprings(mesh->springs, &spring_count, i, j, N, M);
         } 
     }
 
@@ -192,8 +212,10 @@ const char* getTypeName(meshType type)
     case CURTAIN:
         return "curtain";
         break;
+
     case TABLE_CLOTH:
         return "table_cloth";
+        
     default:
         log_error("Mesh type not handled");
         return "xxx";

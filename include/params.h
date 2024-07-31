@@ -15,6 +15,7 @@
  ************************************/
 
 // SPACE CONST
+extern unsigned int M, N;                                          // Matrix dimensions
 extern float    SPACING;                                           // Standard spacing between two points on the same axis
 
 // MESH CONST
@@ -30,5 +31,10 @@ extern float    STIFFNESS_D;                                       // Stiffness 
 
 // FIXED POINT
 extern float    RADIUS;                                            // For the table, the radius of the circle containing fixed points
+
+// SIMULATION
+extern float           DELTA_T;                                    // Time interval between two consecutives updates.                                           
+extern unsigned int    NB_UPDATES;                                 // Total numbers of updates
+extern int             STEP;                                       // Step used for files generation, as instance a step of 10 means 1 file generated every 10 update
 
 #endif // PARAMS_H

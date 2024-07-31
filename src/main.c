@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "../include/params.h"
 #include "../include/mesh.h"
 #include "../include/utils.h"
 
@@ -12,17 +13,16 @@ int main(int argc, char** argv)
     meshType type = parseArguments(argc, argv);
 
 
-    initMesh(m, 50, 50, type);
+    initMesh(m, type);
     log_info("The number of springs in this network is %d", numberOfSprings(m->n, m->m));
 
-    float delta_t = 0.1f;
-    unsigned int count = 10000;
+    
     const char* type_name = getTypeName(type);
     char poly_file_name[256];
     char grid_file_name[256];
 
-    int step = 30;
-    log_info("Starting file generation: delta_time=%.3f number_of_file=%d", delta_t, count/step);
+    
+    log_info("Starting file generation: delta_time=%.3f number_of_file=%d", DELTA_T, NB_UPDATES / STEP);
 
     // create directories
     snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly_%s", type_name);
@@ -32,16 +32,16 @@ int main(int argc, char** argv)
     
 
     clock_t start_time = clock();  // Start the timer
-    for(unsigned int i=0; i< count; i++)
+    for(unsigned int i=0; i< NB_UPDATES; i++)
     {
-        if( i%step == 0){ // write the mesh to vtk files
+        if( i % STEP == 0){ // write the mesh to vtk files
             snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly_%s/mesh_poly_%s_%03u.vtk", type_name, type_name,i);
             snprintf(grid_file_name, sizeof(grid_file_name), "vtk_grid_%s/mesh_grid_%s_%03u.vtk", type_name, type_name,i);
             convertMeshToPolyVTK(m, poly_file_name);
             convertMeshToGridVTK(m, grid_file_name);
         }
         
-        updatePosition(m, delta_t, type);
+        updatePosition(m, DELTA_T, type);
     }
 
     clock_t end_time = clock();  // End the timer
