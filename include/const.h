@@ -24,11 +24,11 @@
 
 // SPRINGS CONST
 #define     MAX_SPRINGS_PER_POINT       12
-#define     STIFFNESS_H                 10.0f                          // stiffess of a horizontal spring
-#define     STIFFNESS_V                 10.0f                          // stiffess of a vertical spring 
-#define     STIFFNESS_D                 10.0f                          // stiffess of a diagonal spring
+#define     STIFFNESS_H                 20.0f                          // stiffess of a horizontal spring
+#define     STIFFNESS_V                 20.0f                          // stiffess of a vertical spring 
+#define     STIFFNESS_D                 20.0f                          // stiffess of a diagonal spring
 
 // FIXED POINT
-#define     RADIUS                      0.25f                            // For the table, the radius of the circle containing fixed points
+#define     RADIUS                      13.0f                            // For the table, the radius of the circle containing fixed points
 
 #endif // !CONST_H

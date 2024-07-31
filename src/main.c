@@ -7,16 +7,16 @@
 int main(int argc, char** argv)
 {
     Mesh* m = (Mesh*) malloc(sizeof(Mesh));
-    meshType type = FLAG;
+    meshType type = TABLE;
     initMesh(m, 50, 50, type);
     log_info("The number of springs in this network is %d", numberOfSprings(m->n, m->m));
 
     float delta_t = 0.1f;
-    unsigned int count = 7000;
+    unsigned int count = 10000;
     char poly_file_name[256];
     char grid_file_name[256];
 
-    int step = 15;
+    int step = 30;
     log_info("Starting file generation: delta_time=%.3f number_of_file=%d", delta_t, count/step);
     clock_t start_time = clock();  // Start the timer
     for(unsigned int i=0; i< count; i++)
