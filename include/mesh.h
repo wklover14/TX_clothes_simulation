@@ -44,8 +44,8 @@ typedef struct Mesh
 }Mesh;
 
 typedef enum {
-    FLAG, // Rectangle in the x,y plan. Fixed points are the two upper extremity of the rectangle with y vertical. 
-    TABLE // Rectan
+    CURTAIN,                    // A curtain(rideau) in the x, y plan with two points fixed   
+    TABLE_CLOTH                 // Square Table on the plan x, z with a circular table. The edge is tree times the radius. 
 } meshType;
 
 /************************************

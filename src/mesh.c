@@ -8,16 +8,16 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
 
     switch (type)
     {
-        case FLAG: // only the two top points
+        case CURTAIN: // only the two top points
             return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
             
-        case TABLE: // The circle of center
+        case TABLE_CLOTH: // The circle of center
                 Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
                 float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
                 return distance <= RADIUS;
             
         default:
-            log_info("Type not handled");
+            log_error("Type not handled");
             exit(EXIT_FAILURE);
     }
 }
@@ -65,13 +65,13 @@ void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
              * */ 
             switch (type)
             {
-                case FLAG: // rectangle in the x,y plan
+                case CURTAIN: // rectangle in the x,y 
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
                     break;
 
-                case TABLE: // rectangle in the x,z plan
+                case TABLE_CLOTH: // rectangle in the x,z plan
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
