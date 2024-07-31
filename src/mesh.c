@@ -101,7 +101,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
     // Init
     Vector** acc  = getMatrix(mesh->n, mesh->m); // acceleration matrex
 
-    Vector f_gr = {0.0f, -9.81f, 0.0f}; // Gravity
+    Vector f_gr = {0.0f, -0.1f, 0.0f}; // Gravity
 
     for(unsigned int i=0; i < mesh->n; i++) // For each point,
     {
