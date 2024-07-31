@@ -6,7 +6,7 @@ SRC_DIR = src
 BUILD_DIR = build
 BIN_DIR = bin
 INCLUDE_DIR = include
-VTK_DIR = vtk_grid vtk_poly
+VTK_DIR = vtk_grid* vtk_poly*
 
 # Executable name
 TARGET = $(BIN_DIR)/app
@@ -28,11 +28,11 @@ SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
 
 # Default target
-all: $(TARGET)
+all: clean run
 
 # Build the target executable
 $(TARGET): $(OBJ_FILES)
-	mkdir -p $(BIN_DIR) $(VTK_DIR)
+	mkdir -p $(BIN_DIR)
 	$(CC) $(OBJ_FILES) -o $(TARGET) $(LDFLAGS)
 
 # Build object files
@@ -45,15 +45,24 @@ clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR) $(VTK_DIR)
 
 # Run the application
-run: $(TARGET)
+run-rideau: $(TARGET)
 	@echo ""
 	@echo ""
-	./$(TARGET)
+	./$(TARGET) curtain
+
+run-nappe: $(TARGET)
+	@echo ""
+	@echo ""
+	./$(TARGET) table-cloth
 
 # Run the application with memory check
-saferun: $(TARGET)
+saferun-rideau: $(TARGET)
 	@echo ""
-	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET)
+	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) curtain
+
+saferun-nappe: $(TARGET)
+	@echo ""
+	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) table-cloth
 
 # Add phony targets
 .PHONY: all clean run

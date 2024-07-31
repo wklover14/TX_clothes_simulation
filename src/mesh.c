@@ -8,54 +8,46 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
 
     switch (type)
     {
-        case FLAG: // only the two top points
+        case CURTAIN: // only the two top points
             return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
             
-        case TABLE: // The circle of center
-                Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
-                float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
-                return distance <= RADIUS;
+        case TABLE_CLOTH: // The circle of center
+            Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
+            float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
+            return distance <= RADIUS;
             
         default:
-            log_info("Type not handled");
+            log_error("Type not handled");
             exit(EXIT_FAILURE);
     }
 }
 
 /**
- * Compute the normal of the Mesh surface at i,j using its neighbors
+ * Ajust params according to the type.
  */
-Vector calculateNormal(Mesh *mesh, int i, int j) {
-    Vector v1, v2;
-    
-    // Ensure the point is not at the boundary to avoid accessing out-of-bounds indices
-    if (i > 0 && j > 0 && i < mesh->n - 1 && j < mesh->m - 1) {
-        v1 = newVectorFromPoint(mesh->P[i][j], mesh->P[i + 1][j]);
-        v2 = newVectorFromPoint(mesh->P[i][j], mesh->P[i][j + 1]);
-    } else {
-        // Handle boundary cases, you might need special handling here
-        // For simplicity, we'll return a default normal
-        return newVector(0.0f, 1.0f, 0.0f); // Default normal vector pointing upwards
+void customs_params(meshType type)
+{
+    switch (type)
+    {
+    case CURTAIN:
+        // default params are OK.
+        break;
+
+    case TABLE_CLOTH:
+        //default params are also ok
+        break;
+
+    default:
+        // if you want customs params for a new type : add it here
+        break;
     }
-    
-    Vector normal = crossProduct(v1, v2);
-    return normalize(normal);
 }
 
-/**
- * Force due to the fluid
- */
-Vector computeFluidForce(Vector normal, Vector u_fluid, Vector v) {
-    Vector diff = newVectorFromPoint(u_fluid, v);
-    float dot_product = scalar_product(normal, diff);
-    Vector force = multVector(C_VI * dot_product, normal);
-    return force;
-}
 
 /**
  * Correctly allocate all attributes of a flag mesh, it fails if the mesh provided is NULL
  */
-void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
+void initMesh(Mesh* mesh, meshType type)
 {
     if(mesh == NULL)
     {
@@ -63,45 +55,43 @@ void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
         return;
     } 
 
-    if(n == 0 || m == 0)
-    {
-        log_error("Bad parameters, neither n nor m can be negative or null");
-        return;
-    }
+    /**  
+     *   customs params
+     */
+    customs_params(type);
 
-    mesh->n = n;
-    mesh->m = m;
+    
+    mesh->n = N;
+    mesh->m = M;
     mesh->t = 0.0f; // the initial is zero    
 
-    mesh->P     = getMatrix(n, m);
-    mesh->P0    = getMatrix(n, m);
-    mesh->V     = getMatrix(n, m);
+    mesh->P     = getMatrix(N, M);
+    mesh->P0    = getMatrix(N, M);
+    mesh->V     = getMatrix(N, M);
 
-    unsigned int N  = numberOfSprings(n, m); // total number of springs in the mesh
-    mesh->springs   = (Spring*) malloc(N * sizeof(Spring));
+    unsigned int nb_springs  = numberOfSprings(N, M); // total number of springs in the mesh
+    mesh->springs   = (Spring*) malloc(nb_springs * sizeof(Spring));
     
     Vector origin = {0.0f, 0.0f, 0.0f};
     unsigned int spring_count = 0;
 
-    for(unsigned int i = 0; i < n ; i++) 
+    for(unsigned int i = 0; i < N ; i++) 
     {   
-        for(unsigned int j=0; j < m; j++)
+        for(unsigned int j=0; j < M; j++)
         {
             /** 
              * Initialize the position of the point in the space here.
-             * mesh->P[i][j] = newVector(x, y, z);
-             * 
-             * For now we give them the same position as their coordinate on the grid, with an initial velocity of zero
+             *
              * */ 
             switch (type)
             {
-                case FLAG: // rectangle in the x,y plan
+                case CURTAIN: // rectangle in the x,y 
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
                     break;
 
-                case TABLE: // rectangle in the x,z plan
+                case TABLE_CLOTH: // rectangle in the x,z plan
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
@@ -112,7 +102,7 @@ void initMesh(Mesh* mesh, unsigned int n,unsigned int m, meshType type)
                     freeMesh(mesh);
                     exit(EXIT_FAILURE);
             }
-            fillSprings(mesh->springs, &spring_count, i, j, n, m);
+            fillSprings(mesh->springs, &spring_count, i, j, N, M);
         } 
     }
 
@@ -131,9 +121,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
     // Init
     Vector** acc  = getMatrix(mesh->n, mesh->m); // acceleration matrex
 
-    Vector f_gr = {0.0f, -9.81f, 0.0f}; // Gravity
-
-    Vector u_fluid = {0.0f, 0.0f, 1.0f}; // Fluid velocity
+    Vector f_gr = {0.0f, -0.1f, 0.0f}; // Gravity
 
     for(unsigned int i=0; i < mesh->n; i++) // For each point,
     {
@@ -145,7 +133,6 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
             }
             // compute force F at i,j
             
-            
             Vector current_position  = mesh->P[i][j];
             Vector original_position = mesh->P0[i][j]; 
 
@@ -155,13 +142,13 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
             unsigned int count = 0;
             Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &count);
 
-            for(unsigned int k=0; k<count; k++) // Iterate through all the springs connected to sum their forces
+            for(unsigned int k=0; k<count; k++)
             {
-                Point target = R[k].ext_2;                                                                              // Point connected through the spring K
-                Vector target_current_position = mesh->P[target.i][target.j];                                           // P[k][l] 
-                Vector target_original_position = mesh->P0[target.i][target.j];                                         // P0[k][l]
+                Point target = R[k].ext_2;
+                Vector target_current_position = mesh->P[target.i][target.j]; // P[k][l] 
+                Vector target_original_position = mesh->P0[target.i][target.j]; // P0[k][l]
 
-                Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position);                       // vector representing the spring
+                Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position); // vector representing the spring
 
                 float current_spring_len = norm(l_i_j_k_l);
                 float original_spring_len = norm(newVectorFromPoint(original_position, target_original_position));
@@ -169,21 +156,15 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
                 float scal = - R[k].stiffness * (current_spring_len - original_spring_len);
                 Vector direction = normalize(l_i_j_k_l);
 
-                f_int = addVector(multVector(scal, direction),f_int);                                                   // Hooke's Law
+                f_int = addVector(multVector(scal, direction),f_int);
             }
             free(R);
 
             // Viscous damping force
             Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
 
-            // fluid force
-            Vector normal = calculateNormal(mesh, i, j);
-            Vector f_fluid = computeFluidForce(normal, u_fluid, mesh->V[i][j]);
-
-
             Vector F = addVector(f_gr, f_int);
             F = addVector(F, f_dis);
-            // F = addVector(F, f_fluid);
 
             acc[i][j] = multVector( 1/Mu, F);
         }
@@ -219,6 +200,27 @@ void freeMesh(Mesh* mesh) {
     free(mesh->P0);
     free(mesh->springs);
     free(mesh);
+}
+
+/**
+ * Return the string corresponding to a meshType
+ */
+const char* getTypeName(meshType type)
+{
+    switch (type)
+    {
+    case CURTAIN:
+        return "curtain";
+        break;
+
+    case TABLE_CLOTH:
+        return "table_cloth";
+        
+    default:
+        log_error("Mesh type not handled");
+        return "xxx";
+        break;
+    }
 }
 
 

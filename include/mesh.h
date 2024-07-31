@@ -16,7 +16,7 @@
 #include "space.h"
 #include "log.h"
 #include "spring.h"
-#include "const.h"
+#include "params.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -44,8 +44,8 @@ typedef struct Mesh
 }Mesh;
 
 typedef enum {
-    FLAG, // Rectangle in the x,y plan. Fixed points are the two upper extremity of the rectangle with y vertical. 
-    TABLE // Rectan
+    CURTAIN,                    // A curtain(rideau) in the x, y plan with two points fixed   
+    TABLE_CLOTH                 // Square Table on the plan x, z with a circular table. The edge is tree times the radius. 
 } meshType;
 
 /************************************
@@ -57,14 +57,13 @@ typedef enum {
  ************************************/
 
 bool isFixedPoint(unsigned int, unsigned int, Mesh* mesh, meshType);
+void customs_params(meshType type);
 
-void initMesh(Mesh*, unsigned int,unsigned int, meshType);
+void initMesh(Mesh*, meshType);
 void updatePosition(Mesh*, float, meshType);
 void freeMesh(Mesh*);
 
-Vector calculateNormal(Mesh* mesh, int i, int j);
-Vector computeFluidForce(Vector normal, Vector u_fluid, Vector v);
-
+const char* getTypeName(meshType type);
 void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename);
 void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename);
 
