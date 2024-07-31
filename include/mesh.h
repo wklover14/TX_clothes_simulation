@@ -16,7 +16,7 @@
 #include "space.h"
 #include "log.h"
 #include "spring.h"
-#include "const.h"
+#include "params.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
