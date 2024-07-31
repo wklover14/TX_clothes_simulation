@@ -15,7 +15,7 @@
  ************************************/
 #include "space.h"
 #include "log.h"
-#include "const.h"
+#include "params.h"
 #include <stdlib.h>
 
 /************************************
