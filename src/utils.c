@@ -17,18 +17,22 @@ int createDirectory(const char *path) {
     }
 }
 
-int parseArguments(int argc, char *argv[]) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <directory_path>\n", argv[0]);
-        return -1; // Failure
+meshType parseArguments(int argc, char *argv[]) {
+    if (argc != 2) { // only one argument
+        log_error("Usage: %s [curtain] | [table-cloth] ", argv[0]);
+        exit(EXIT_FAILURE);
     }
 
-    for (int i = 1; i < argc; i++) {
-        if (strlen(argv[i]) == 0) {
-            fprintf(stderr, "Invalid argument: empty string\n");
-            return -1; // Failure
-        }
+    if( strcmp(argv[1], "curtain") == 0 )
+    {   
+        return CURTAIN;
+    } else if (strcmp(argv[1], "table-cloth") == 0)
+    {
+        return TABLE_CLOTH;
+    } else
+    {
+        log_error("the requested arguments doesn't exists");
+        log_error("Usage: %s [curtain] | [table-cloth] ", argv[0]);
+        exit(EXIT_FAILURE);
     }
-
-    return 0; // Success
 }

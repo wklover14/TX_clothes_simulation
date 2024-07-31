@@ -9,7 +9,7 @@
 int main(int argc, char** argv)
 {
     Mesh* m = (Mesh*) malloc(sizeof(Mesh));
-    meshType type = TABLE_CLOTH;
+    meshType type = parseArguments(argc, argv);
 
 
     initMesh(m, 50, 50, type);
@@ -17,6 +17,7 @@ int main(int argc, char** argv)
 
     float delta_t = 0.1f;
     unsigned int count = 10000;
+    const char* type_name = getTypeName(type);
     char poly_file_name[256];
     char grid_file_name[256];
 
@@ -24,8 +25,8 @@ int main(int argc, char** argv)
     log_info("Starting file generation: delta_time=%.3f number_of_file=%d", delta_t, count/step);
 
     // create directories
-    snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly_%u", type);
-    snprintf(grid_file_name, sizeof(grid_file_name), "vtk_grid_%u", type);
+    snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly_%s", type_name);
+    snprintf(grid_file_name, sizeof(grid_file_name), "vtk_grid_%s", type_name);
     createDirectory(poly_file_name);
     createDirectory(grid_file_name);
     
@@ -34,8 +35,8 @@ int main(int argc, char** argv)
     for(unsigned int i=0; i< count; i++)
     {
         if( i%step == 0){ // write the mesh to vtk files
-            snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly_%u/mesh_poly_%03u.vtk", type, i);
-            snprintf(grid_file_name, sizeof(grid_file_name), "vtk_grid_%u/mesh_grid_%03u.vtk", type, i);
+            snprintf(poly_file_name, sizeof(poly_file_name), "vtk_poly_%s/mesh_poly_%s_%03u.vtk", type_name, type_name,i);
+            snprintf(grid_file_name, sizeof(grid_file_name), "vtk_grid_%s/mesh_grid_%s_%03u.vtk", type_name, type_name,i);
             convertMeshToPolyVTK(m, poly_file_name);
             convertMeshToGridVTK(m, grid_file_name);
         }

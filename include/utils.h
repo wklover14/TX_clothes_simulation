@@ -11,6 +11,7 @@
 #define UTILS_H
 
 #include "log.h"
+#include "mesh.h"
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -41,6 +42,6 @@ int createDirectory(const char *path);
  * @param argv Argument vector.
  * @return 0 if arguments are valid, -1 otherwise.
  */
-int parseArguments(int argc, char *argv[]);
+meshType parseArguments(int argc, char *argv[]);
 
 #endif // UTILS_H

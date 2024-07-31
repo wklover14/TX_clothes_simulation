@@ -62,6 +62,7 @@ void initMesh(Mesh*, unsigned int,unsigned int, meshType);
 void updatePosition(Mesh*, float, meshType);
 void freeMesh(Mesh*);
 
+const char* getTypeName(meshType type);
 void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename);
 void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename);
 

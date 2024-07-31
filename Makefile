@@ -45,15 +45,24 @@ clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR) $(VTK_DIR)
 
 # Run the application
-run: $(TARGET)
+run-rideau: $(TARGET)
 	@echo ""
 	@echo ""
-	./$(TARGET)
+	./$(TARGET) curtain
+
+run-nappe: $(TARGET)
+	@echo ""
+	@echo ""
+	./$(TARGET) table-cloth
 
 # Run the application with memory check
-saferun: $(TARGET)
+saferun-rideau: $(TARGET)
 	@echo ""
-	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET)
+	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) curtain
+
+saferun-nappe: $(TARGET)
+	@echo ""
+	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) table-cloth
 
 # Add phony targets
 .PHONY: all clean run

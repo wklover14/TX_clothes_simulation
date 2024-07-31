@@ -182,6 +182,25 @@ void freeMesh(Mesh* mesh) {
     free(mesh);
 }
 
+/**
+ * Return the string corresponding to a meshType
+ */
+const char* getTypeName(meshType type)
+{
+    switch (type)
+    {
+    case CURTAIN:
+        return "curtain";
+        break;
+    case TABLE_CLOTH:
+        return "table_cloth";
+    default:
+        log_error("Mesh type not handled");
+        return "xxx";
+        break;
+    }
+}
+
 
 /** 
  * Convert a mesh into a set of points and lines in a vtk file
