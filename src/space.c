@@ -143,6 +143,10 @@ Vector** getMatrix(unsigned int n, unsigned int m)
     for(unsigned int i=0; i<n; i++)
     {
         res[i] = (Vector*) malloc(m * sizeof(Vector));
+        for(int j = 0; j< m; j++)
+        {
+            res[i][j] = newVector(0, 0, 0);
+        }
     }
     return res;
 }
