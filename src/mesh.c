@@ -15,7 +15,11 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
             Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
             float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
             return distance <= RADIUS;
-            
+        
+        case SOFT:
+            // no points is fixed.
+            return false;
+
         default:
             log_error("Type not handled");
             exit(EXIT_FAILURE);
@@ -35,6 +39,15 @@ void customs_params(meshType type)
 
     case TABLE_CLOTH:
         //default params are also ok
+        break;
+
+    case SOFT:
+        // TODO: xxx
+        M = 20;
+        N = 20;
+        SPACING = 0.2f;
+        NB_UPDATES = 300;
+        STEP = 1;
         break;
 
     default:
@@ -94,6 +107,12 @@ void initMesh(Mesh* mesh, meshType type)
                 case TABLE_CLOTH: // rectangle in the x,z plan
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
+                    mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
+                    break;
+                
+                case SOFT: // rectangle in the x,y plan
+                    mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+                    mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
                     break;
 
@@ -211,15 +230,16 @@ const char* getTypeName(meshType type)
     {
     case CURTAIN:
         return "curtain";
-        break;
 
     case TABLE_CLOTH:
         return "table_cloth";
+
+    case SOFT:
+        return "soft";
         
     default:
         log_error("Mesh type not handled");
         return "xxx";
-        break;
     }
 }
 

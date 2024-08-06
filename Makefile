@@ -55,6 +55,11 @@ run-nappe: $(TARGET)
 	@echo ""
 	./$(TARGET) table-cloth
 
+run-tissus: $(TARGET)
+	@echo ""
+	@echo ""
+	./$(TARGET) soft
+
 # Run the application with memory check
 saferun-rideau: $(TARGET)
 	@echo ""
@@ -63,6 +68,10 @@ saferun-rideau: $(TARGET)
 saferun-nappe: $(TARGET)
 	@echo ""
 	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) table-cloth
+
+saferun-tissus: $(TARGET)
+	@echo ""
+	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) soft
 
 # Add phony targets
 .PHONY: all clean run
