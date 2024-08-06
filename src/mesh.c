@@ -193,6 +193,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
 
             Vector F = addVector(f_gr, f_dis);
             F = addVector(F, f_dis);
+            F = addVector(F, computeAddForces(mesh, type, i, j));
 
             acc[i][j] = addVector( acc[i][j], multVector( 1/Mu, F));
         }
@@ -228,6 +229,37 @@ void freeMesh(Mesh* mesh) {
     free(mesh->P0);
     free(mesh->springs);
     free(mesh);
+}
+
+
+/**
+ * Return a vector of force depending on the meshtype 
+ */
+Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int j)
+{
+    Vector res = {0, 0, 0};
+
+    switch (type)
+    {
+        case CURTAIN:
+            /* No additionnal forces to add*/
+            break;
+            
+        case TABLE_CLOTH:
+            /* No additionnal forces to add*/
+            break;
+        
+        case SOFT:
+            res.y = 0.1f;
+            // Apply a force to point onto the left and right edge of the soft
+            break;
+
+        default:
+            break;
+    }
+
+    // Return null vector
+    return res;
 }
 
 /**

@@ -63,6 +63,7 @@ void customs_params(meshType type);
 void initMesh(Mesh*, meshType);
 void updatePosition(Mesh*, float, meshType);
 void freeMesh(Mesh*);
+Vector computeAddForces(Mesh*, meshType, unsigned int, unsigned int);
 
 const char* getTypeName(meshType type);
 void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename);
