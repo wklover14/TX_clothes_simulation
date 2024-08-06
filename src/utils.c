@@ -19,7 +19,7 @@ int createDirectory(const char *path) {
 
 meshType parseArguments(int argc, char *argv[]) {
     if (argc != 2) { // only one argument
-        log_error("Usage: %s [curtain] | [table-cloth] ", argv[0]);
+        log_error("Usage: %s [curtain] | [table-cloth] | [soft] ", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -29,6 +29,9 @@ meshType parseArguments(int argc, char *argv[]) {
     } else if (strcmp(argv[1], "table-cloth") == 0)
     {
         return TABLE_CLOTH;
+    } else if (strcmp(argv[1], "soft")== 0)
+    {
+        return SOFT;
     } else
     {
         log_error("the requested arguments doesn't exists");

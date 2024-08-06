@@ -45,7 +45,8 @@ typedef struct Mesh
 
 typedef enum {
     CURTAIN,                    // A curtain(rideau) in the x, y plan with two points fixed   
-    TABLE_CLOTH                 // Square Table on the plan x, z with a circular table. The edge is tree times the radius. 
+    TABLE_CLOTH,                // Square Table on the plan x, z with a circular table. The edge is tree times the radius.
+    SOFT                        // A cloth in the x, y plan which it strech untill it breaks
 } meshType;
 
 /************************************

@@ -143,6 +143,22 @@ Vector** getMatrix(unsigned int n, unsigned int m)
     for(unsigned int i=0; i<n; i++)
     {
         res[i] = (Vector*) malloc(m * sizeof(Vector));
+        for(int j = 0; j< m; j++)
+        {
+            res[i][j] = newVector(0, 0, 0);
+        }
     }
     return res;
+}
+
+/**
+ * Return the cross product of a and b
+ */
+Vector crossProduct(Vector a, Vector b) {
+    Vector result = {
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    };
+    return result;
 }

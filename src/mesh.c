@@ -15,7 +15,11 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
             Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
             float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
             return distance <= RADIUS;
-            
+        
+        case SOFT:
+            // no points is fixed.
+            return false;
+
         default:
             log_error("Type not handled");
             exit(EXIT_FAILURE);
@@ -35,6 +39,15 @@ void customs_params(meshType type)
 
     case TABLE_CLOTH:
         //default params are also ok
+        break;
+
+    case SOFT:
+        // TODO: xxx
+        M = 20;
+        N = 20;
+        SPACING = 0.2f;
+        NB_UPDATES = 300;
+        STEP = 1;
         break;
 
     default:
@@ -96,6 +109,12 @@ void initMesh(Mesh* mesh, meshType type)
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
                     break;
+                
+                case SOFT: // rectangle in the x,y plan
+                    mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+                    mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+                    mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
+                    break;
 
                 default:
                     log_error("Type of mesh not handled");
@@ -123,7 +142,44 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
 
     Vector f_gr = {0.0f, -0.1f, 0.0f}; // Gravity
 
-    for(unsigned int i=0; i < mesh->n; i++) // For each point,
+    unsigned int number_springs = numberOfSprings(mesh->n, mesh->m);
+
+    // compute springs forces
+    for(unsigned int k=0; k < number_springs; k++)
+    {
+        Spring current = mesh->springs[k];
+        Point A = current.ext_1;
+        Point B = current.ext_2;
+        
+        
+        Vector current_position  = mesh->P[A.i][A.j]; // P[i][j]
+        Vector original_position = mesh->P0[A.i][A.j]; // P0[i][j]
+
+        Vector target_current_position = mesh->P[B.i][B.j]; // P[k][l] 
+        Vector target_original_position = mesh->P0[B.i][B.j]; // P0[k][l]
+
+        // Force for A
+        Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position); // vector representing the spring
+
+        float current_spring_len = norm(l_i_j_k_l);
+        float original_spring_len = norm(newVectorFromPoint(original_position, target_original_position));
+
+        float scal = - current.stiffness * (current_spring_len - original_spring_len);
+        Vector direction = normalize(l_i_j_k_l);
+        
+        if(! isFixedPoint(A.i, A.j, mesh, type))
+        {
+            acc[A.i][A.j] = addVector(acc[A.i][A.j], multVector( scal / Mu, direction));
+        }
+
+        // Force for B
+        if(! isFixedPoint(B.i, B.j, mesh, type))
+        {
+            acc[B.i][B.j] = addVector(acc[B.i][B.j], multVector(- scal / Mu, direction));
+        }
+    }
+
+    for(unsigned int i=0; i < mesh->n; i++) // For each point, compute the others forces
     {
         for(unsigned int j=0; j < mesh->m; j++)
         {
@@ -131,42 +187,14 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
             {
                 continue; 
             }
-            // compute force F at i,j
             
-            Vector current_position  = mesh->P[i][j];
-            Vector original_position = mesh->P0[i][j]; 
-
-            // Internal forces
-            Vector f_int = {0.0f, 0.0f, 0.0f};
-            
-            unsigned int count = 0;
-            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &count);
-
-            for(unsigned int k=0; k<count; k++)
-            {
-                Point target = R[k].ext_2;
-                Vector target_current_position = mesh->P[target.i][target.j]; // P[k][l] 
-                Vector target_original_position = mesh->P0[target.i][target.j]; // P0[k][l]
-
-                Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position); // vector representing the spring
-
-                float current_spring_len = norm(l_i_j_k_l);
-                float original_spring_len = norm(newVectorFromPoint(original_position, target_original_position));
-
-                float scal = - R[k].stiffness * (current_spring_len - original_spring_len);
-                Vector direction = normalize(l_i_j_k_l);
-
-                f_int = addVector(multVector(scal, direction),f_int);
-            }
-            free(R);
-
             // Viscous damping force
             Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
 
-            Vector F = addVector(f_gr, f_int);
+            Vector F = addVector(f_gr, f_dis);
             F = addVector(F, f_dis);
 
-            acc[i][j] = multVector( 1/Mu, F);
+            acc[i][j] = addVector( acc[i][j], multVector( 1/Mu, F));
         }
     }
 
@@ -211,15 +239,16 @@ const char* getTypeName(meshType type)
     {
     case CURTAIN:
         return "curtain";
-        break;
 
     case TABLE_CLOTH:
         return "table_cloth";
+
+    case SOFT:
+        return "soft";
         
     default:
         log_error("Mesh type not handled");
         return "xxx";
-        break;
     }
 }
 
