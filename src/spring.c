@@ -5,7 +5,7 @@
  * Return a spring
  */
 Spring newSpring(Point ext_a, Point ext_b, float stiff){
-    Spring temp_spring = {ext_a, ext_b, stiff};
+    Spring temp_spring = {ext_a, ext_b, false, 0.0f, stiff};
     return temp_spring;
 }
 

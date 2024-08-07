@@ -41,6 +41,7 @@ typedef struct Mesh
     Vector**        P0;         // Initial position matrix
     
     Spring*         springs;    // list of springs of the mesh, refered as R in the litterature
+    unsigned int    n_springs;  // number of non-break springs in the mesh
 }Mesh;
 
 typedef enum {
@@ -58,15 +59,15 @@ typedef enum {
  ************************************/
 
 bool isFixedPoint(unsigned int, unsigned int, Mesh* mesh, meshType);
-void customs_params(meshType type);
+// void customs_params(meshType type);
 
 void initMesh(Mesh*, meshType);
 void updatePosition(Mesh*, float, meshType);
+void computeSpringForces(Mesh*, Vector**, meshType);
+void computeOtherForces(Mesh*, Vector**, Vector, meshType);
+void updateMeshPositions(Mesh* mesh, Vector**, float, meshType);
+void checkSpringBreaks(Mesh* mesh, float);
 void freeMesh(Mesh*);
 Vector computeAddForces(Mesh*, meshType, unsigned int, unsigned int);
-
-const char* getTypeName(meshType type);
-void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename);
-void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename);
 
 #endif // !MESH_H

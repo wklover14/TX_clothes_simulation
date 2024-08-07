@@ -1,7 +1,7 @@
 /**
 *************************************************************
 * @file     utils.h
-* @author   Chatgpt
+* @author   Chatgpt & WATCHO Gabby
 * @date     31/07/2024
 * @brief
 *************************************************************
@@ -43,5 +43,11 @@ int createDirectory(const char *path);
  * @return 0 if arguments are valid, -1 otherwise.
  */
 meshType parseArguments(int argc, char *argv[]);
+
+
+const char* getTypeName(meshType type);
+void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename);
+void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename);
+
 
 #endif // UTILS_H
