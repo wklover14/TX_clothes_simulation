@@ -18,7 +18,7 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
         
         case SOFT:
             // no points is fixed.
-            return i == mesh->n - 1;
+            return false;
 
         default:
             log_error("Type not handled");
@@ -274,8 +274,8 @@ void checkSpringBreaks(Mesh* mesh, float delta_t)
         // Update spring damage
         current->damage += strain * delta_t;
 
-        // Check if the spring should break based on energy or damage threshold
-        if (potential_energy > ENERGY_THRESHOLD || current->damage > DAMAGE_THRESHOLD)
+        // Check if the spring should break based on energy
+        if (potential_energy > ENERGY_THRESHOLD)
         {
             current->isBreak = true;
             mesh->n_springs--;
@@ -323,16 +323,16 @@ Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int 
             res.y = 0.1f;
 
             // Apply a force to point onto the left and right edge of the soft
-            if( i <= 2 )
+            if( i <= 3 )
             {
-                // res.x += -coef;
-                if( j >= mesh->m - 4)
-                    res.z += coef;
+                res.x += -coef;
+                // if( j >= mesh->m - 4)
+                //     res.z += coef;
             } 
-            // else if (i >= mesh->n-2)
-            // {
-            //     res.x += coef;
-            // }            
+            else if (i >= mesh-> n-4)
+            {
+                res.x += coef;
+            }            
             break;
 
         default:
