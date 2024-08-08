@@ -66,7 +66,6 @@ void updatePosition(Mesh*, float, meshType);
 void computeSpringForces(Mesh*, Vector**, meshType);
 void computeOtherForces(Mesh*, Vector**, Vector, meshType);
 void updateMeshPositions(Mesh* mesh, Vector**, float, meshType);
-void checkSpringBreaks(Mesh* mesh, float);
 void freeMesh(Mesh*);
 Vector computeAddForces(Mesh*, meshType, unsigned int, unsigned int);
 

@@ -151,7 +151,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
     updateMeshPositions(mesh, acc, delta_t, type);
 
     // Check for springs that should break
-    checkSpringBreaks(mesh, delta_t);
+    // checkSpringBreaks(mesh, delta_t);
 
     freeMatrix(acc, mesh->n); // Free allocated memory for acceleration matrix
 }
@@ -195,6 +195,15 @@ void computeSpringForces(Mesh* mesh, Vector** acc, meshType type)
         if (!isFixedPoint(B.i, B.j, mesh, type))
         {
             acc[B.i][B.j] = addVector(acc[B.i][B.j], multVector(-force_magnitude / Mu, direction));
+        }
+
+        float potential_energy = 0.5f * current->stiffness * (current_spring_len - original_spring_len) * (current_spring_len - original_spring_len);
+
+        // Check if the spring should break based on energy
+        if (potential_energy > ENERGY_THRESHOLD)
+        {
+            current->isBreak = true;
+            mesh->n_springs--;
         }
     }
 }
@@ -241,48 +250,6 @@ void updateMeshPositions(Mesh* mesh, Vector** acc, float delta_t, meshType type)
         }
     }
 }
-
-/**
- * Check for springs that should break
- */
-void checkSpringBreaks(Mesh* mesh, float delta_t)
-{
-    unsigned int number_springs = numberOfSprings(mesh->n, mesh->m);
-
-    for (unsigned int k = 0; k < number_springs; k++)
-    {
-        Spring* current = &mesh->springs[k];
-
-        if (current->isBreak) continue; // Skip already broken springs
-
-        Point A = current->ext_1;
-        Point B = current->ext_2;
-
-        // Get positions of the spring endpoints
-        Vector current_position = mesh->P[A.i][A.j];
-        Vector target_current_position = mesh->P[B.i][B.j];
-
-        // Compute spring displacement vector and lengths
-        Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position);
-        float current_spring_len = norm(l_i_j_k_l);
-        float original_spring_len = norm(newVectorFromPoint(mesh->P0[A.i][A.j], mesh->P0[B.i][B.j]));
-
-        // Compute strain and potential energy of the spring
-        float strain = (current_spring_len - original_spring_len) / original_spring_len;
-        float potential_energy = 0.5f * current->stiffness * (current_spring_len - original_spring_len) * (current_spring_len - original_spring_len);
-
-        // Update spring damage
-        current->damage += strain * delta_t;
-
-        // Check if the spring should break based on energy
-        if (potential_energy > ENERGY_THRESHOLD)
-        {
-            current->isBreak = true;
-            mesh->n_springs--;
-        }
-    }
-}
-
 
 /**
  * De-allocate correctly a mesh
