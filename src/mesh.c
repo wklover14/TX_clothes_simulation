@@ -18,7 +18,7 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
         
         case SOFT:
             // no points is fixed.
-            return false;
+            return j >= mesh->n-2 ;
 
         default:
             log_error("Type not handled");
@@ -42,12 +42,13 @@ void customs_params(meshType type)
         break;
 
     case SOFT:
-        // TODO: xxx
         M = 20;
         N = 20;
         SPACING = 0.2f;
         NB_UPDATES = 300;
         STEP = 1;
+        ENERGY_THRESHOLD = 0.5f;
+        DAMAGE_THRESHOLD = 2.50f;
         break;
 
     default:
@@ -84,6 +85,7 @@ void initMesh(Mesh* mesh, meshType type)
 
     unsigned int nb_springs  = numberOfSprings(N, M); // total number of springs in the mesh
     mesh->springs   = (Spring*) malloc(nb_springs * sizeof(Spring));
+    mesh->n_springs = nb_springs;
     
     Vector origin = {0.0f, 0.0f, 0.0f};
     unsigned int spring_count = 0;
@@ -137,81 +139,121 @@ void initMesh(Mesh* mesh, meshType type)
  */
 void updatePosition(Mesh* mesh, float delta_t, meshType type)
 {
-    // Init
-    Vector** acc  = getMatrix(mesh->n, mesh->m); // acceleration matrex
-
+    Vector** acc = getMatrix(mesh->n, mesh->m); // Acceleration matrix
     Vector f_gr = {0.0f, -0.1f, 0.0f}; // Gravity
 
+    // Compute spring forces and update acceleration
+    computeSpringForces(mesh, acc, type, delta_t);
+
+    // Compute other forces (e.g., gravity, damping) and update acceleration
+    computeOtherForces(mesh, acc, f_gr, type);
+
+    // Update positions and velocities based on the acceleration
+    updateMeshPositions(mesh, acc, delta_t, type);
+
+    // Check for springs that should break
+    // checkSpringBreaks(mesh, delta_t);
+
+    freeMatrix(acc, mesh->n); // Free allocated memory for acceleration matrix
+}
+
+/**
+ * Compute forces applied to each spring and update acceleration matrix
+ */
+void computeSpringForces(Mesh* mesh, Vector** acc, meshType type, float delta_t)
+{
     unsigned int number_springs = numberOfSprings(mesh->n, mesh->m);
 
-    // compute springs forces
-    for(unsigned int k=0; k < number_springs; k++)
+    for (unsigned int k = 0; k < number_springs; k++)
     {
-        Spring current = mesh->springs[k];
-        Point A = current.ext_1;
-        Point B = current.ext_2;
-        
-        
-        Vector current_position  = mesh->P[A.i][A.j]; // P[i][j]
-        Vector original_position = mesh->P0[A.i][A.j]; // P0[i][j]
+        Spring* current = &mesh->springs[k];
 
-        Vector target_current_position = mesh->P[B.i][B.j]; // P[k][l] 
-        Vector target_original_position = mesh->P0[B.i][B.j]; // P0[k][l]
+        if (current->isBreak) continue; // Skip broken springs
 
-        // Force for A
-        Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position); // vector representing the spring
+        Point A = current->ext_1;
+        Point B = current->ext_2;
 
+        // Get positions of the spring endpoints
+        Vector current_position = mesh->P[A.i][A.j];
+        Vector target_current_position = mesh->P[B.i][B.j];
+
+        // Compute spring displacement vector and lengths
+        Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position);
         float current_spring_len = norm(l_i_j_k_l);
-        float original_spring_len = norm(newVectorFromPoint(original_position, target_original_position));
+        float original_spring_len = norm(newVectorFromPoint(mesh->P0[A.i][A.j], mesh->P0[B.i][B.j]));
 
-        float scal = - current.stiffness * (current_spring_len - original_spring_len);
+        // Compute spring force magnitude and direction
+        float force_magnitude = -current->stiffness * (current_spring_len - original_spring_len);
         Vector direction = normalize(l_i_j_k_l);
-        
-        if(! isFixedPoint(A.i, A.j, mesh, type))
+
+        // Apply force to endpoint A
+        if (!isFixedPoint(A.i, A.j, mesh, type))
         {
-            acc[A.i][A.j] = addVector(acc[A.i][A.j], multVector( scal / Mu, direction));
+            acc[A.i][A.j] = addVector(acc[A.i][A.j], multVector(force_magnitude / Mu, direction));
         }
 
-        // Force for B
-        if(! isFixedPoint(B.i, B.j, mesh, type))
+        // Apply force to endpoint B
+        if (!isFixedPoint(B.i, B.j, mesh, type))
         {
-            acc[B.i][B.j] = addVector(acc[B.i][B.j], multVector(- scal / Mu, direction));
+            acc[B.i][B.j] = addVector(acc[B.i][B.j], multVector(-force_magnitude / Mu, direction));
         }
-    }
 
-    for(unsigned int i=0; i < mesh->n; i++) // For each point, compute the others forces
-    {
-        for(unsigned int j=0; j < mesh->m; j++)
+        float strain = (current_spring_len - original_spring_len) / original_spring_len;
+        float potential_energy = 0.5f * current->stiffness * (current_spring_len - original_spring_len) * (current_spring_len - original_spring_len);
+
+        // Update spring damage
+        current->damage += strain * delta_t;
+
+        // Check if the spring should break based on energy
+        if (potential_energy > ENERGY_THRESHOLD || current->damage > DAMAGE_THRESHOLD)
         {
-            if(isFixedPoint(i, j, mesh, type))
-            {
-                continue; 
-            }
-            
-            // Viscous damping force
-            Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
-
-            Vector F = addVector(f_gr, f_dis);
-            F = addVector(F, f_dis);
-
-            acc[i][j] = addVector( acc[i][j], multVector( 1/Mu, F));
+            current->isBreak = true;
+            mesh->n_springs--;
         }
     }
+}
 
-    // update the position of points based on the acceleartion
+/**
+ * Compute other forces (e.g., gravity, damping) and update acceleration
+ */
+void computeOtherForces(Mesh* mesh, Vector** acc, Vector f_gr, meshType type)
+{
     for (unsigned int i = 0; i < mesh->n; i++)
     {
         for (unsigned int j = 0; j < mesh->m; j++)
         {
-            if(isFixedPoint(i,j,mesh, type)){
-                continue;
-            }
+            if (isFixedPoint(i, j, mesh, type)) continue; // Skip fixed points
+
+            // Compute viscous damping force
+            Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
+
+            // Sum all forces acting on the point
+            Vector F = addVector(f_gr, f_dis); // Gravity and damping
+            F = addVector(F, f_dis); // Damping force applied twice (if intended)
+            F = addVector(F, computeAddForces(mesh, type, i, j)); // Additional forces based on mesh type
+
+            // Update acceleration with the total force
+            acc[i][j] = addVector(acc[i][j], multVector(1 / Mu, F));
+        }
+    }
+}
+
+/**
+ * Update positions and velocities based on the acceleration
+ */
+void updateMeshPositions(Mesh* mesh, Vector** acc, float delta_t, meshType type)
+{
+    for (unsigned int i = 0; i < mesh->n; i++)
+    {
+        for (unsigned int j = 0; j < mesh->m; j++)
+        {
+            if (isFixedPoint(i, j, mesh, type)) continue; // Skip fixed points
+
+            // Update velocity and position of the point
             mesh->V[i][j] = addVector(mesh->V[i][j], multVector(delta_t, acc[i][j]));
             mesh->P[i][j] = addVector(mesh->P[i][j], multVector(delta_t, mesh->V[i][j]));
         }
-        
     }
-    freeMatrix(acc, mesh->n);
 }
 
 /**
@@ -231,113 +273,51 @@ void freeMesh(Mesh* mesh) {
 }
 
 /**
- * Return the string corresponding to a meshType
+ * Return a vector of force depending on the meshtype, these are customs forces that are not listed in the 
+ * initial documentation 
  */
-const char* getTypeName(meshType type)
+Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int j)
 {
+    Vector res = {0, 0, 0};
+    float coef = 2.0f;
+
     switch (type)
     {
-    case CURTAIN:
-        return "curtain";
-
-    case TABLE_CLOTH:
-        return "table_cloth";
-
-    case SOFT:
-        return "soft";
+        case CURTAIN:
+            /* No additionnal forces to add*/
+            break;
+            
+        case TABLE_CLOTH:
+            /* No additionnal forces to add*/
+            break;
         
-    default:
-        log_error("Mesh type not handled");
-        return "xxx";
-    }
-}
+        case SOFT:
+            res.y = 0.1f;
 
+            // Apply a force to point onto the left and right edge of the soft
+            // if( i <= 3 )
+            // {
+            //     res.x += -coef;
+            //     // if( j >= mesh->m - 4)
+            //     //     res.z += coef;
+            // } 
+            // else if (i >= mesh-> n-4)
+            // {
+            //     res.x += coef;
+            // }  
+            
+            // apply a force to little square a t the bottom right of the soft
+            if ( j <= 4)
+            {
+                res.y -= coef;
+            }
 
-/** 
- * Convert a mesh into a set of points and lines in a vtk file
- */ 
-void convertMeshToPolyVTK(const Mesh *mesh, const char *output_filename)
-{
-    FILE* file = fopen(output_filename, "w");
-    if (file == NULL) {
-        log_error("Error: Could not open file %s.\n",output_filename);
-        return;
-    }
+            break;
 
-    // Write VTK file header
-    fprintf(file, "# vtk DataFile Version 4.2\n");
-    fprintf(file, "Mesh Data\n");
-    fprintf(file, "ASCII\n");
-    fprintf(file, "DATASET POLYDATA\n");
-
-    // Write points
-    unsigned int total_points = mesh->n * mesh->m;
-    fprintf(file, "POINTS %u float\n", total_points);
-    for (unsigned int i = 0; i < mesh->n; i++) {
-        for (unsigned int j = 0; j < mesh->m; j++) {
-            fprintf(file, "%3f %3f %3f\n", mesh->P[i][j].x, mesh->P[i][j].y, mesh->P[i][j].z);
-        }
+        default:
+            break;
     }
 
-    // Write lines (springs)
-    unsigned int springs_count = numberOfSprings(mesh->n , mesh->m);
-
-    // print all springs
-    fprintf(file, "LINES %u %u\n", springs_count, 3 * springs_count);
-    for (unsigned int k = 0; k < springs_count; k++) {
-        // Convert grid coordinates (i, j) to point indices
-        unsigned int id1 = mesh->springs[k].ext_1.i * mesh->m + mesh->springs[k].ext_1.j;
-        unsigned int id2 = mesh->springs[k].ext_2.i * mesh->m + mesh->springs[k].ext_2.j;
-        fprintf(file, "2 %d %d\n", id1, id2);
-    }
-
-    fclose(file);
-}
-
-/**
- * Convert a Mesh into a a grid that can be used as surface easily.
- */
-void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename)
-{
-    FILE* file = fopen(output_filename, "w");
-    if (file == NULL) {
-        log_error("Error: Could not open file %s.\n",output_filename);
-        return;
-    }
-    // Write VTK file header
-    fprintf(file, "# vtk DataFile Version 4.2\n"); // Only 4.2 version is correctly supported by Paraview
-    fprintf(file, "Unstructured Grid Mesh\n");
-    fprintf(file, "ASCII\n");
-    fprintf(file, "DATASET UNSTRUCTURED_GRID\n");
-
-    // Write points
-    unsigned int total_points = mesh->n * mesh->m;
-    fprintf(file, "POINTS %u float\n", total_points);
-    for (unsigned int i = 0; i < mesh->n; i++) {
-        for (unsigned int j = 0; j < mesh->m; j++) {
-            fprintf(file, "%f %f %f\n", mesh->P[i][j].x, mesh->P[i][j].y, mesh->P[i][j].z);
-        }
-    }
-
-    // Write cells (quadrilateral)
-    unsigned int total_cells = (mesh->n - 1) * (mesh->m - 1);
-    fprintf(file, "CELLS %u %u\n", total_cells, 5 * total_cells); // Each cell has 4 points + 1 (for the number of points)
-    for (unsigned int i = 0; i < mesh->n - 1; i++) {
-        for (unsigned int j = 0; j < mesh->m - 1; j++) {
-            unsigned int id1 = i * mesh->m + j;
-            unsigned int id2 = i * mesh->m + (j + 1);
-            unsigned int id3 = (i + 1) * mesh->m + j;
-            unsigned int id4 = (i + 1) * mesh->m + (j + 1);
-            fprintf(file, "4 %d %d %d %d\n", id1, id2, id4, id3);
-        }
-    }
-
-    // Write cell types
-    // VTK_QUAD = 9
-    fprintf(file, "CELL_TYPES %u\n", total_cells);
-    for (unsigned int k = 0; k < total_cells; k++) {
-        fprintf(file, "7\n");
-    }
-
-    fclose(file);
+    // Return null vector
+    return res;
 }

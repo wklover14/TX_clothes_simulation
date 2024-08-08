@@ -17,6 +17,7 @@
 #include "log.h"
 #include "params.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 /************************************
  * MACROS AND DEFINES
@@ -32,6 +33,8 @@ typedef struct
 {
     Point  ext_1;               // One extremum point
     Point  ext_2;               // The other extremum point
+    bool   isBreak;             // Represents if the string is break or not
+    float  damage;              
     float  stiffness;      
 } Spring;
 

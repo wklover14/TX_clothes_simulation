@@ -15,6 +15,8 @@ int                 MAX_SPRINGS_PER_POINT           = 12;
 float               STIFFNESS_H                     = 20.0f;
 float               STIFFNESS_V                     = 20.0f;
 float               STIFFNESS_D                     = 20.0f;
+float               ENERGY_THRESHOLD                = 100000.0f;        // 0.90f correct value
+float               DAMAGE_THRESHOLD                = 100000.0f;
 
 // RADIUS
 float               RADIUS                          = 13.0f;

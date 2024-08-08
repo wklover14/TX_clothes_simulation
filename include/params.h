@@ -28,6 +28,8 @@ extern int      MAX_SPRINGS_PER_POINT;
 extern float    STIFFNESS_H;                                       // Stiffness of a horizontal spring
 extern float    STIFFNESS_V;                                       // Stiffness of a vertical spring
 extern float    STIFFNESS_D;                                       // Stiffness of a diagonal spring
+extern float    ENERGY_THRESHOLD;                                  // Maximum energy a spring can accumulate
+extern float    DAMAGE_THRESHOLD;                                  // Maximum damage a spring can take
 
 // FIXED POINT
 extern float    RADIUS;                                            // For the table, the radius of the circle containing fixed points
