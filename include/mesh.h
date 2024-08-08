@@ -63,7 +63,7 @@ bool isFixedPoint(unsigned int, unsigned int, Mesh* mesh, meshType);
 
 void initMesh(Mesh*, meshType);
 void updatePosition(Mesh*, float, meshType);
-void computeSpringForces(Mesh*, Vector**, meshType);
+void computeSpringForces(Mesh*, Vector**, meshType, float);
 void computeOtherForces(Mesh*, Vector**, Vector, meshType);
 void updateMeshPositions(Mesh* mesh, Vector**, float, meshType);
 void freeMesh(Mesh*);

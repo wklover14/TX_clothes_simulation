@@ -18,7 +18,7 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
         
         case SOFT:
             // no points is fixed.
-            return false;
+            return j >= mesh->n-2 ;
 
         default:
             log_error("Type not handled");
@@ -42,12 +42,13 @@ void customs_params(meshType type)
         break;
 
     case SOFT:
-        // TODO: xxx
         M = 20;
         N = 20;
         SPACING = 0.2f;
         NB_UPDATES = 300;
         STEP = 1;
+        ENERGY_THRESHOLD = 0.5f;
+        DAMAGE_THRESHOLD = 2.50f;
         break;
 
     default:
@@ -142,7 +143,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
     Vector f_gr = {0.0f, -0.1f, 0.0f}; // Gravity
 
     // Compute spring forces and update acceleration
-    computeSpringForces(mesh, acc, type);
+    computeSpringForces(mesh, acc, type, delta_t);
 
     // Compute other forces (e.g., gravity, damping) and update acceleration
     computeOtherForces(mesh, acc, f_gr, type);
@@ -159,7 +160,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
 /**
  * Compute forces applied to each spring and update acceleration matrix
  */
-void computeSpringForces(Mesh* mesh, Vector** acc, meshType type)
+void computeSpringForces(Mesh* mesh, Vector** acc, meshType type, float delta_t)
 {
     unsigned int number_springs = numberOfSprings(mesh->n, mesh->m);
 
@@ -197,10 +198,14 @@ void computeSpringForces(Mesh* mesh, Vector** acc, meshType type)
             acc[B.i][B.j] = addVector(acc[B.i][B.j], multVector(-force_magnitude / Mu, direction));
         }
 
+        float strain = (current_spring_len - original_spring_len) / original_spring_len;
         float potential_energy = 0.5f * current->stiffness * (current_spring_len - original_spring_len) * (current_spring_len - original_spring_len);
 
+        // Update spring damage
+        current->damage += strain * delta_t;
+
         // Check if the spring should break based on energy
-        if (potential_energy > ENERGY_THRESHOLD)
+        if (potential_energy > ENERGY_THRESHOLD || current->damage > DAMAGE_THRESHOLD)
         {
             current->isBreak = true;
             mesh->n_springs--;
@@ -274,7 +279,7 @@ void freeMesh(Mesh* mesh) {
 Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int j)
 {
     Vector res = {0, 0, 0};
-    float coef = 4.0f;
+    float coef = 2.0f;
 
     switch (type)
     {
@@ -290,16 +295,23 @@ Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int 
             res.y = 0.1f;
 
             // Apply a force to point onto the left and right edge of the soft
-            if( i <= 3 )
+            // if( i <= 3 )
+            // {
+            //     res.x += -coef;
+            //     // if( j >= mesh->m - 4)
+            //     //     res.z += coef;
+            // } 
+            // else if (i >= mesh-> n-4)
+            // {
+            //     res.x += coef;
+            // }  
+            
+            // apply a force to little square a t the bottom right of the soft
+            if ( j <= 4)
             {
-                res.x += -coef;
-                // if( j >= mesh->m - 4)
-                //     res.z += coef;
-            } 
-            else if (i >= mesh-> n-4)
-            {
-                res.x += coef;
-            }            
+                res.y -= coef;
+            }
+
             break;
 
         default:
