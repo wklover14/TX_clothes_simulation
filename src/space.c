@@ -5,6 +5,13 @@
 #include <string.h>
 #include "space.h"
 
+/**
+ * Return true if the two vectors are collinear
+ */
+bool isCollinear(Vector a, Vector b)
+{
+    return (scalar_product(a, b) == 1) || (scalar_product(a, b) == -1);
+}
 
 /**
  * The scalar product between a and b

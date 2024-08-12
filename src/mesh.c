@@ -141,18 +141,16 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
 {
     Vector** acc = getMatrix(mesh->n, mesh->m); // Acceleration matrix
     Vector f_gr = {0.0f, -0.1f, 0.0f}; // Gravity
+    Vector u_fluid = {0.0f, 0.0f, 0.1f}; // Fluid 
 
     // Compute spring forces and update acceleration
     computeSpringForces(mesh, acc, type, delta_t);
 
     // Compute other forces (e.g., gravity, damping) and update acceleration
-    computeOtherForces(mesh, acc, f_gr, type);
+    computeOtherForces(mesh, acc, f_gr, u_fluid, type);
 
     // Update positions and velocities based on the acceleration
     updateMeshPositions(mesh, acc, delta_t, type);
-
-    // Check for springs that should break
-    // checkSpringBreaks(mesh, delta_t);
 
     freeMatrix(acc, mesh->n); // Free allocated memory for acceleration matrix
 }
@@ -216,7 +214,7 @@ void computeSpringForces(Mesh* mesh, Vector** acc, meshType type, float delta_t)
 /**
  * Compute other forces (e.g., gravity, damping) and update acceleration
  */
-void computeOtherForces(Mesh* mesh, Vector** acc, Vector f_gr, meshType type)
+void computeOtherForces(Mesh* mesh, Vector** acc, Vector f_gr, Vector u_fluid, meshType type)
 {
     for (unsigned int i = 0; i < mesh->n; i++)
     {
@@ -227,10 +225,43 @@ void computeOtherForces(Mesh* mesh, Vector** acc, Vector f_gr, meshType type)
             // Compute viscous damping force
             Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);
 
+            // Fluid force
+            Vector f_fluid = {0.0f, 0.0f, 0.0f};
+            Vector n_ij;
+
+            // compute the normal force
+            unsigned int nb_springs = 0;
+            Spring* R = getPossibleSprings(i, j, mesh->n, mesh->m, &nb_springs);
+            // take the first and the last and do the cross product.
+            if (nb_springs > 2)
+            {
+                // First vector 
+                Vector a = newVectorFromPoint(mesh->P[R[0].ext_1.i][R[0].ext_1.j],mesh->P[R[0].ext_2.i][R[0].ext_2.j]);
+
+                // second Vector
+                Vector b = newVectorFromPoint(mesh->P[R[nb_springs - 1].ext_1.i][R[nb_springs - 1].ext_1.j],mesh->P[R[nb_springs - 1].ext_2.i][R[nb_springs - 1].ext_2.j]);
+
+                // check of the colinearity
+                if(!isCollinear(a, b))
+                {
+                    n_ij = normalize(crossProduct(a, b));
+                } else {
+                    log_error("A taccc");
+                }
+
+            } 
+            else
+            {
+                log_error("Cannot find correct possible springs for %d, %d", i, j);
+            }
+
+            float scal = scalar_product(n_ij, addVector(u_fluid, multVector(-1.0f, mesh->V[i][j])));
+            f_fluid = multVector(scal*C_VI, n_ij);
+
             // Sum all forces acting on the point
-            Vector F = addVector(f_gr, f_dis); // Gravity and damping
-            F = addVector(F, f_dis); // Damping force applied twice (if intended)
-            F = addVector(F, computeAddForces(mesh, type, i, j)); // Additional forces based on mesh type
+            Vector F = addVector(f_gr, f_dis);                      // Gravity and damping
+            F = addVector(F, computeAddForces(mesh, type, i, j));   // Additional forces based on mesh type
+            F = addVector(F, f_fluid);
 
             // Update acceleration with the total force
             acc[i][j] = addVector(acc[i][j], multVector(1 / Mu, F));

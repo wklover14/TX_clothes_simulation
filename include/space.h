@@ -13,6 +13,7 @@
 /************************************
  * INCLUDES
  ************************************/
+#include <stdbool.h>
 
 /************************************
  * MACROS AND DEFINES
@@ -46,6 +47,7 @@ typedef struct Point
  * GLOBAL FUNCTION PROTOTYPES
  ************************************/
 
+bool        isCollinear(Vector, Vector);
 float       scalar_product(Vector , Vector );
 float       norm(Vector a);
 Vector      normalize(Vector a);
