@@ -22,5 +22,5 @@ float               DAMAGE_THRESHOLD                = 100000.0f;
 float               RADIUS                          = 13.0f;
 
 float               DELTA_T                         = 0.1f;
-unsigned int        NB_UPDATES                      = 10000;
-int                 STEP                            = 30;
+unsigned int        NB_UPDATES                      = 5000;
+int                 STEP                            = 20;

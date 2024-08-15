@@ -246,7 +246,7 @@ void computeOtherForces(Mesh* mesh, Vector** acc, Vector f_gr, Vector u_fluid, m
                 {
                     n_ij = normalize(crossProduct(a, b));
                 } else {
-                    log_error("A taccc");
+                    log_error("Cannot compute normal for some points %d, %d", i, j);
                 }
 
             } 
