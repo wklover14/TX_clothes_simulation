@@ -12,10 +12,10 @@ VTK_DIR = vtk_grid* vtk_poly*
 TARGET = $(BIN_DIR)/app
 
 # Compiler flags
-CFLAGS = -Wall -I$(INCLUDE_DIR)
+CFLAGS = -fopenmp -Wall -I$(INCLUDE_DIR)
 
 # Linker flags
-LDFLAGS = -lm
+LDFLAGS = -lm -fopenmp
 
 # Memory checker
 MEMCHECKER = valgrind

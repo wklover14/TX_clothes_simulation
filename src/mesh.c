@@ -1,4 +1,5 @@
 #include "../include/mesh.h"
+#include <omp.h>
 
 /**
  * Return true if a point is fixed and false if not
@@ -150,6 +151,7 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
     computeSpringForces(mesh, acc, type, delta_t);
 
     // Compute position and velocity for every point
+    #pragma omp parallel for collapse(2)
     for (int i = 0; i < mesh->n; i++) {
         for (int j = 0; j < mesh->m; j++) {
             if (!isFixedPoint(i, j, mesh, type)) {
@@ -177,52 +179,89 @@ void computeSpringForces(Mesh* mesh, Vector** acc, meshType type, float delta_t)
 {
     unsigned int number_springs = numberOfSprings(mesh->n, mesh->m);
 
-    for (unsigned int k = 0; k < number_springs; k++)
+    // Start a parallel region; each thread will have its own local acceleration matrix
+    #pragma omp parallel
     {
-        Spring* current = &mesh->springs[k];
+        // Thread-local acceleration matrix to avoid conflicts with other threads
+        Vector** local_acc = getMatrix(mesh->n, mesh->m);
 
-        if (current->isBreak) continue; // Skip broken springs
-
-        Point A = current->ext_1;
-        Point B = current->ext_2;
-
-        // Get positions of the spring endpoints
-        Vector current_position = mesh->P[A.i][A.j];
-        Vector target_current_position = mesh->P[B.i][B.j];
-
-        // Compute spring displacement vector and lengths
-        Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position);
-        float current_spring_len = norm(l_i_j_k_l);
-        float original_spring_len = norm(newVectorFromPoint(mesh->P0[A.i][A.j], mesh->P0[B.i][B.j]));
-
-        // Compute spring force magnitude and direction
-        float force_magnitude = -current->stiffness * (current_spring_len - original_spring_len);
-        Vector direction = normalize(l_i_j_k_l);
-
-        // Apply force to endpoint A
-        if (!isFixedPoint(A.i, A.j, mesh, type))
+        // Parallel for loop to iterate over all springs in the mesh
+        #pragma omp for
+        for (unsigned int k = 0; k < number_springs; k++)
         {
-            acc[A.i][A.j] = addVector(acc[A.i][A.j], multVector(force_magnitude / Mu, direction));
+            Spring* current = &mesh->springs[k];
+
+            // Skip broken springs
+            if (current->isBreak) continue;
+
+            // Get the points connected by the spring
+            Point A = current->ext_1;
+            Point B = current->ext_2;
+
+            // Get the current positions of the spring's endpoints
+            Vector current_position = mesh->P[A.i][A.j];
+            Vector target_current_position = mesh->P[B.i][B.j];
+
+            // Compute the vector representing the spring's displacement
+            Vector l_i_j_k_l = newVectorFromPoint(target_current_position, current_position);
+            float current_spring_len = norm(l_i_j_k_l);
+
+            // Compute the original length of the spring
+            float original_spring_len = norm(newVectorFromPoint(mesh->P0[A.i][A.j], mesh->P0[B.i][B.j]));
+
+            // Calculate the spring force magnitude using Hooke's Law
+            float force_magnitude = -current->stiffness * (current_spring_len - original_spring_len);
+
+            // Calculate the direction of the spring force
+            Vector direction = normalize(l_i_j_k_l);
+
+            // Apply force to endpoint A if it's not a fixed point
+            if (!isFixedPoint(A.i, A.j, mesh, type))
+            {
+                // Accumulate the force into the thread-local acceleration matrix
+                local_acc[A.i][A.j] = addVector(local_acc[A.i][A.j], multVector(force_magnitude / Mu, direction));
+            }
+
+            // Apply force to endpoint B if it's not a fixed point
+            if (!isFixedPoint(B.i, B.j, mesh, type))
+            {
+                // Accumulate the opposing force into the thread-local acceleration matrix
+                local_acc[B.i][B.j] = addVector(local_acc[B.i][B.j], multVector(-force_magnitude / Mu, direction));
+            }
+
+            // Calculate strain and potential energy for damage and breakage checks
+            float strain = (current_spring_len - original_spring_len) / original_spring_len;
+            float potential_energy = 0.5f * current->stiffness * (current_spring_len - original_spring_len) * (current_spring_len - original_spring_len);
+
+            // Atomically update the damage on the spring
+            #pragma omp atomic
+            current->damage += strain * delta_t;
+
+            // Check if the spring should break based on energy or damage thresholds
+            if (potential_energy > ENERGY_THRESHOLD || current->damage > DAMAGE_THRESHOLD)
+            {
+                // Critical section to safely mark the spring as broken and decrease the spring count
+                #pragma omp critical
+                {
+                    current->isBreak = true;
+                    mesh->n_springs--;
+                }
+            }
         }
 
-        // Apply force to endpoint B
-        if (!isFixedPoint(B.i, B.j, mesh, type))
+        // Critical section to merge thread-local acceleration matrices into the global matrix
+        #pragma omp critical
         {
-            acc[B.i][B.j] = addVector(acc[B.i][B.j], multVector(-force_magnitude / Mu, direction));
+            // Iterate over the entire matrix and add local_acc to the global acc
+            for (int i = 0; i < mesh->n; i++) {
+                for (int j = 0; j < mesh->m; j++) {
+                    acc[i][j] = addVector(acc[i][j], local_acc[i][j]);
+                }
+            }
         }
 
-        float strain = (current_spring_len - original_spring_len) / original_spring_len;
-        float potential_energy = 0.5f * current->stiffness * (current_spring_len - original_spring_len) * (current_spring_len - original_spring_len);
-
-        // Update spring damage
-        current->damage += strain * delta_t;
-
-        // Check if the spring should break based on energy
-        if (potential_energy > ENERGY_THRESHOLD || current->damage > DAMAGE_THRESHOLD)
-        {
-            current->isBreak = true;
-            mesh->n_springs--;
-        }
+        // Free the memory allocated for the thread-local acceleration matrix
+        freeMatrix(local_acc, mesh->n);
     }
 }
 
