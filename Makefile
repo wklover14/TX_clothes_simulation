@@ -28,7 +28,7 @@ SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
 
 # Default target
-all: clean run
+all: clean build
 
 # Build the target executable
 $(TARGET): $(OBJ_FILES)
@@ -44,34 +44,37 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR) $(VTK_DIR)
 
+# Compile source files and create an executable
+build:$(TARGET)
+	@echo ""
+	@echo "Application created"
+
 # Run the application
-run-rideau: $(TARGET)
+run-rideau:
 	@echo ""
 	@echo ""
 	./$(TARGET) curtain
 
-run-nappe: $(TARGET)
-	@echo ""
+run-nappe:
 	@echo ""
 	./$(TARGET) table-cloth
 
-run-tissus: $(TARGET)
-	@echo ""
+run-tissus:
 	@echo ""
 	./$(TARGET) soft
 
 # Run the application with memory check
-saferun-rideau: $(TARGET)
+saferun-rideau:
 	@echo ""
 	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) curtain
 
-saferun-nappe: $(TARGET)
+saferun-nappe:
 	@echo ""
 	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) table-cloth
 
-saferun-tissus: $(TARGET)
+saferun-tissus:
 	@echo ""
 	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) soft
 
 # Add phony targets
-.PHONY: all clean run
+.PHONY: all clean build
