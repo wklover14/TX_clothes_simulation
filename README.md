@@ -1,4 +1,3 @@
-
 # Cloth Simulation Project
 
 ## Description
@@ -143,7 +142,7 @@ meshType parseArguments(int argc, char *argv[]) {
 The simulation generates VTK files in the `vtk_poly_<mesh_type>` and `vtk_grid_<mesh_type>` directories for visualization. These can be viewed using appropriate VTK visualization software.
 
 ## License
-[Specify the license under which this project is released]
+Free to use
 
 ## Authors
 - WATCHO KEUGONG Gabby Pavel (gwathok@etu.utc.fr)
