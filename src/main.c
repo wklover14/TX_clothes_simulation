@@ -49,6 +49,6 @@ int main(int argc, char** argv)
     log_info("File generation completed in %.3f seconds", elapsed_time);
     
     freeMesh(m);
-    log_debug("Exiting ");
+    log_debug("Files generated. Exiting ");
     return 0;
 }

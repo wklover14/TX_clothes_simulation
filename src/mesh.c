@@ -129,7 +129,10 @@ void initMesh(Mesh* mesh, meshType type)
 
     log_info("Mesh Created!");
     Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
-    log_info("center = %s", VectorToString(center));
+    
+    char* center_string = VectorToString(center);
+    log_info("center = %s", center_string);
+    free(center_string);
 }
 
 
@@ -265,6 +268,9 @@ void computeOtherForces(Mesh* mesh, Vector** acc, Vector f_gr, Vector u_fluid, m
 
             // Update acceleration with the total force
             acc[i][j] = addVector(acc[i][j], multVector(1 / Mu, F));
+
+            // Free memory used
+            free(R);
         }
     }
 }
