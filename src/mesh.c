@@ -21,6 +21,9 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
             // no points is fixed.
             return false;
 
+        case FLAG: // only the left edge
+            return i == 0;
+
         default:
             log_error("Type not handled");
             exit(EXIT_FAILURE);
@@ -55,6 +58,10 @@ void customs_params(meshType type)
         DAMAGE_THRESHOLD = 4.50f;
         RADIUS = 0.2f;
 
+        break;
+
+    case FLAG:
+        // default params are OK
         break;
 
     default:
@@ -121,6 +128,12 @@ void initMesh(Mesh* mesh, meshType type)
                 case SOFT: // rectangle in the x,y plan
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
+                    mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
+                    break;
+
+                case FLAG: // rectangle in the x,y
+                    mesh->P[i][j]   = newVector(origin.x + i * 1.4f * SPACING, origin.y + j * SPACING, origin.z);
+                    mesh->P0[i][j]  = newVector(origin.x + i * 1.4f * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
                     break;
 
@@ -384,6 +397,9 @@ Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int 
             // }
 
 
+            break;
+        case FLAG:
+            /* No additionnal forces to add*/
             break;
 
         default:

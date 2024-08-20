@@ -63,6 +63,10 @@ run-tissus:
 	@echo ""
 	./$(TARGET) soft
 
+run-drapeau:
+	@echo ""
+	./$(TARGET) flag
+
 # Run the application with memory check
 saferun-rideau:
 	@echo ""
@@ -75,6 +79,10 @@ saferun-nappe:
 saferun-tissus:
 	@echo ""
 	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) soft
+
+saferun-drapeau:
+	@echo ""
+	$(MEMCHECKER) $(MEMFLAGS) ./$(TARGET) flag
 
 # Add phony targets
 .PHONY: all clean build

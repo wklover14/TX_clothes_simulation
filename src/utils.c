@@ -32,6 +32,9 @@ meshType parseArguments(int argc, char *argv[]) {
     } else if (strcmp(argv[1], "soft")== 0)
     {
         return SOFT;
+    } else if(strcmp(argv[1], "flag")== 0)
+    {
+        return FLAG;
     } else
     {
         log_error("the requested arguments doesn't exists");
@@ -56,7 +59,10 @@ const char* getTypeName(meshType type)
 
     case SOFT:
         return "soft";
-        
+    
+    case FLAG:
+        return "flag";
+
     default:
         log_error("Mesh type not handled");
         return "xxx";
