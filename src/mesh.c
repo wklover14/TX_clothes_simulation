@@ -22,7 +22,7 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
             return false;
 
         case FLAG: // only the left edge
-            return i == 0;
+            return (i == 0 && j <= 1) || (i == 0 && j>= mesh->n-2);
 
         default:
             log_error("Type not handled");
@@ -62,6 +62,8 @@ void customs_params(meshType type)
 
     case FLAG:
         // default params are OK
+        FLUID.x = 10.0f;
+        GRAVITY.y = -0.05f;
         break;
 
     default:
@@ -320,10 +322,10 @@ Vector computeFluidForce(Mesh* mesh, unsigned int i, unsigned int j, Vector u_fl
         {
             n_ij = normalize(crossProduct(a, b));
         }
-        else
-        {
-            log_error("Cannot compute normal for point %d, %d", i, j);
-        }
+        // else
+        // {
+        //     log_error("Cannot compute normal for point %d, %d", i, j);
+        // }
     } 
     else
     {
