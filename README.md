@@ -14,6 +14,7 @@ This project implements a cloth simulation system in C. It models various types 
 - Standard C libraries (stdlib.h, stdio.h, stdbool.h, time.h, string.h, math.h)
 - GCC compiler
 - Make
+- OpenMP for parrallelism
 - Valgrind (optional, used for memory checking)
 
 ## Project Structure

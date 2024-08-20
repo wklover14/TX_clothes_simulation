@@ -19,7 +19,7 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
         
         case SOFT:
             // no points is fixed.
-            return j >= mesh->n-2 ;
+            return false;
 
         default:
             log_error("Type not handled");
@@ -43,13 +43,18 @@ void customs_params(meshType type)
         break;
 
     case SOFT:
+        STIFFNESS_H = 15.0f;
+        STIFFNESS_V = 20.0f;
+        STIFFNESS_D = 40.0f;
         M = 20;
         N = 20;
         SPACING = 0.2f;
         NB_UPDATES = 300;
         STEP = 1;
-        ENERGY_THRESHOLD = 0.5f;
-        DAMAGE_THRESHOLD = 2.50f;
+        ENERGY_THRESHOLD = 1.50f;
+        DAMAGE_THRESHOLD = 4.50f;
+        RADIUS = 0.2f;
+
         break;
 
     default:
@@ -238,6 +243,19 @@ void computeSpringForces(Mesh* mesh, Vector** acc, meshType type, float delta_t)
             current->damage += strain * delta_t;
 
             // Check if the spring should break based on energy or damage thresholds
+            
+            // Method using a len criteria
+            // float ratio = current_spring_len / original_spring_len ;
+            // if ( ratio >= 1.5f  )
+            // {
+            //     #pragma omp critical
+            //     {
+            //         current->isBreak = true;
+            //         mesh->n_springs--;
+            //     }
+            // }
+            
+            // Method using a more complex criteria based on energy and damage
             if (potential_energy > ENERGY_THRESHOLD || current->damage > DAMAGE_THRESHOLD)
             {
                 // Critical section to safely mark the spring as broken and decrease the spring count
@@ -348,22 +366,23 @@ Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int 
             res.y = 0.1f;
 
             // Apply a force to point onto the left and right edge of the soft
-            // if( i <= 3 )
-            // {
-            //     res.x += -coef;
-            //     // if( j >= mesh->m - 4)
-            //     //     res.z += coef;
-            // } 
-            // else if (i >= mesh-> n-4)
-            // {
-            //     res.x += coef;
-            // }  
+            if( i < mesh->n/2 )
+            {
+                res.x += - coef * mesh->P[i][j].y;
+                // if( j >= mesh->m - 4)
+                //     res.z += coef;
+            } 
+            else
+            {
+                 res.x += coef * mesh->P[i][j].y;
+            }  
             
             // apply a force to little square a t the bottom right of the soft
-            if ( j <= 4)
-            {
-                res.y -= coef;
-            }
+            // if ( j <= 4)
+            // {
+            //     res.y -= coef;
+            // }
+
 
             break;
 
