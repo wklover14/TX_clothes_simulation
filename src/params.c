@@ -1,8 +1,8 @@
 #include "params.h"
 
 // Initialize variables with default values, which work for the CURTAIN and TABLE_CLOTH cases.
-unsigned int        M                               = 50;                                    
-unsigned int        N                               = 50;                                    
+unsigned int        M                               = 50;
+unsigned int        N                               = 50;
 float               SPACING                         = 1.0f;
 
 // MESH CONST

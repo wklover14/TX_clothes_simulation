@@ -11,12 +11,12 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
     {
         case CURTAIN: // only the two top points
             return (i == 0 && j == mesh->m - 1) || (i == mesh->n - 1 && j == mesh->m - 1);
-            
+
         case TABLE_CLOTH: // The circle of center
             Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
             float  distance = norm(newVectorFromPoint(center, mesh->P[i][j]));      // distance de l'origin
             return distance <= RADIUS;
-        
+
         case SOFT:
             // no points is fixed.
             return false;
@@ -82,17 +82,17 @@ void initMesh(Mesh* mesh, meshType type)
     {
         log_error("Mesh provided is empty!!");
         return;
-    } 
+    }
 
-    /**  
+    /**
      *   customs params
      */
     customs_params(type);
 
-    
+
     mesh->n = N;
     mesh->m = M;
-    mesh->t = 0.0f; // the initial is zero    
+    mesh->t = 0.0f; // the initial is zero
 
     mesh->P     = getMatrix(N, M);
     mesh->P0    = getMatrix(N, M);
@@ -101,21 +101,21 @@ void initMesh(Mesh* mesh, meshType type)
     unsigned int nb_springs  = numberOfSprings(N, M); // total number of springs in the mesh
     mesh->springs   = (Spring*) malloc(nb_springs * sizeof(Spring));
     mesh->n_springs = nb_springs;
-    
+
     Vector origin = {0.0f, 0.0f, 0.0f};
     unsigned int spring_count = 0;
 
-    for(unsigned int i = 0; i < N ; i++) 
-    {   
+    for(unsigned int i = 0; i < N ; i++)
+    {
         for(unsigned int j=0; j < M; j++)
         {
-            /** 
+            /**
              * Initialize the position of the point in the space here.
              *
-             * */ 
+             * */
             switch (type)
             {
-                case CURTAIN: // rectangle in the x,y 
+                case CURTAIN: // rectangle in the x,y
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
@@ -126,7 +126,7 @@ void initMesh(Mesh* mesh, meshType type)
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y, origin.z + j * SPACING);
                     mesh->V[i][j]   = newVector(0.0f, 0.0f, 0.0f);
                     break;
-                
+
                 case SOFT: // rectangle in the x,y plan
                     mesh->P[i][j]   = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
                     mesh->P0[i][j]  = newVector(origin.x + i * SPACING, origin.y + j * SPACING, origin.z);
@@ -145,12 +145,12 @@ void initMesh(Mesh* mesh, meshType type)
                     exit(EXIT_FAILURE);
             }
             fillSprings(mesh->springs, &spring_count, i, j, N, M);
-        } 
+        }
     }
 
     log_info("Mesh Created!");
     Vector center = { (origin.x + (mesh->n - 1) * SPACING) / 2.0f , origin.y, (origin.z + (mesh->m - 1) * SPACING) / 2.0f};               // center of the mesh
-    
+
     char* center_string = VectorToString(center);
     log_info("center = %s", center_string);
     free(center_string);
@@ -256,7 +256,7 @@ void computeSpringForces(Mesh* mesh, Vector** acc, meshType type, float delta_t)
             current->damage += strain * delta_t;
 
             // Check if the spring should break based on energy or damage thresholds
-            
+
             // Method using a len criteria
             // float ratio = current_spring_len / original_spring_len ;
             // if ( ratio >= 1.5f  )
@@ -267,7 +267,7 @@ void computeSpringForces(Mesh* mesh, Vector** acc, meshType type, float delta_t)
             //         mesh->n_springs--;
             //     }
             // }
-            
+
             // Method using a more complex criteria based on energy and damage
             if (potential_energy > ENERGY_THRESHOLD || current->damage > DAMAGE_THRESHOLD)
             {
@@ -310,23 +310,28 @@ Vector computeFluidForce(Mesh* mesh, unsigned int i, unsigned int j, Vector u_fl
 
     if (nb_springs > 2)
     {
-        // First vector 
+        // First vector
         Vector a = newVectorFromPoint(mesh->P[R[0].ext_1.i][R[0].ext_1.j], mesh->P[R[0].ext_2.i][R[0].ext_2.j]);
 
-        // Second Vector
-        Vector b = newVectorFromPoint(mesh->P[R[nb_springs - 1].ext_1.i][R[nb_springs - 1].ext_1.j], 
-                                      mesh->P[R[nb_springs - 1].ext_2.i][R[nb_springs - 1].ext_2.j]);
-
-        // Check for colinearity
-        if(!isCollinear(a, b))
+        unsigned int k = 0;
+        for (k = 1; k < nb_springs; k++) // find a non colinear vector among his neighbors
         {
-            n_ij = normalize(crossProduct(a, b));
+            // Second Vector
+            Vector b = newVectorFromPoint(mesh->P[R[k].ext_1.i][R[k].ext_1.j],
+                                        mesh->P[R[k].ext_2.i][R[k].ext_2.j]);
+
+            // Check for colinearity
+            if(!isCollinear(a, b))
+            {
+                n_ij = normalize(crossProduct(a, b));
+                break;
+            }
         }
-        // else
-        // {
-        //     log_error("Cannot compute normal for point %d, %d", i, j);
-        // }
-    } 
+        if (k == nb_springs) // there is no non colinear vector between his spring neighborhood 
+        {
+            log_error("Cannot compute normal vector for %d, %d", i, j);
+        }
+    }
     else
     {
         log_error("Cannot find correct possible springs for %d, %d", i, j);
@@ -357,8 +362,8 @@ void freeMesh(Mesh* mesh) {
 }
 
 /**
- * Return a vector of force depending on the meshtype, these are customs forces that are not listed in the 
- * initial documentation 
+ * Return a vector of force depending on the meshtype, these are customs forces that are not listed in the
+ * initial documentation
  */
 Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int j)
 {
@@ -370,11 +375,11 @@ Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int 
         case CURTAIN:
             /* No additionnal forces to add*/
             break;
-            
+
         case TABLE_CLOTH:
             /* No additionnal forces to add*/
             break;
-        
+
         case SOFT:
             res.y = 0.1f;
 
@@ -384,12 +389,12 @@ Vector computeAddForces(Mesh* mesh, meshType type, unsigned int i, unsigned int 
                 res.x += - coef * mesh->P[i][j].y;
                 // if( j >= mesh->m - 4)
                 //     res.z += coef;
-            } 
+            }
             else
             {
                  res.x += coef * mesh->P[i][j].y;
-            }  
-            
+            }
+
             // apply a force to little square a t the bottom right of the soft
             // if ( j <= 4)
             // {
