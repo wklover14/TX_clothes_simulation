@@ -10,6 +10,7 @@
 #ifndef PARAMS_H
 #define PARAMS_H
 
+#include "space.h"
 /************************************
  * EXPORTED VARIABLES
  ************************************/
@@ -39,4 +40,6 @@ extern float           DELTA_T;                                    // Time inter
 extern unsigned int    NB_UPDATES;                                 // Total numbers of updates
 extern int             STEP;                                       // Step used for files generation, as instance a step of 10 means 1 file generated every 10 update
 
+extern Vector   GRAVITY;
+extern Vector   FLUID;
 #endif // PARAMS_H

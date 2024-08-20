@@ -162,8 +162,6 @@ void initMesh(Mesh* mesh, meshType type)
 void updatePosition(Mesh* mesh, float delta_t, meshType type)
 {
     Vector** acc = getMatrix(mesh->n, mesh->m); // Acceleration matrix
-    Vector f_gr = {0.0f, -0.1f, 0.0f}; // Gravity
-    Vector u_fluid = {0.0f, 0.0f, 0.1f}; // Fluid 
 
     // Compute spring forces and update acceleration
     computeSpringForces(mesh, acc, type, delta_t);
@@ -173,9 +171,9 @@ void updatePosition(Mesh* mesh, float delta_t, meshType type)
     for (int i = 0; i < mesh->n; i++) {
         for (int j = 0; j < mesh->m; j++) {
             if (!isFixedPoint(i, j, mesh, type)) {
-                Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);                       // Viscous damping force
-                Vector f_fluid = computeFluidForce(mesh, i, j, u_fluid);                // fluid force
-                Vector F = addVector(f_gr, f_dis);
+                Vector f_dis = multVector(-C_DIS, mesh->V[i][j]);                      // Viscous damping force
+                Vector f_fluid = computeFluidForce(mesh, i, j, FLUID);                // fluid force
+                Vector F = addVector(GRAVITY, f_dis);
                 F = addVector(F, computeAddForces(mesh, type, i, j));
                 F = addVector(F, f_fluid);
 

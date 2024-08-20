@@ -24,3 +24,6 @@ float               RADIUS                          = 13.0f;
 float               DELTA_T                         = 0.1f;
 unsigned int        NB_UPDATES                      = 5000;
 int                 STEP                            = 20;
+
+Vector       GRAVITY                         = {0.0f, -0.1f, 0.0f};
+Vector       FLUID                           = {0.0f, 0.0f, 0.1f};

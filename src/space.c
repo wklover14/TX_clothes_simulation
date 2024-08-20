@@ -10,7 +10,9 @@
  */
 bool isCollinear(Vector a, Vector b)
 {
-    return (scalar_product(a, b) == 1) || (scalar_product(a, b) == -1);
+    double epsilon = 1e-3;  // Internal 
+    double scalarProduct = scalar_product(a, b);
+    return (fabs(scalarProduct - 1.0) < epsilon) || (fabs(scalarProduct + 1.0) < epsilon);
 }
 
 /**
