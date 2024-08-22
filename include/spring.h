@@ -29,13 +29,13 @@
  ************************************/
 
 // A spring is a segment define by two points and a stiffness
-typedef struct 
+typedef struct
 {
     Point  ext_1;               // One extremum point
     Point  ext_2;               // The other extremum point
     bool   isBreak;             // Represents if the string is break or not
-    float  damage;              
-    float  stiffness;      
+    float  damage;
+    float  stiffness;
 } Spring;
 
 

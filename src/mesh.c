@@ -22,7 +22,7 @@ bool isFixedPoint(unsigned int i, unsigned int j, Mesh* mesh, meshType type) {
             return false;
 
         case FLAG: // only the left edge
-            return (i == 0 && j <= 1) || (i == 0 && j>= mesh->n-2);
+            return (i == 0 && j == 0) || (i == 0 && j == mesh->n-1);
 
         default:
             log_error("Type not handled");
@@ -62,7 +62,8 @@ void customs_params(meshType type)
 
     case FLAG:
         // default params are OK
-        FLUID.x = 10.0f;
+        FLUID.x = 5.0f;
+        FLUID.z = 2.0f;
         GRAVITY.y = -0.05f;
         break;
 
@@ -327,7 +328,7 @@ Vector computeFluidForce(Mesh* mesh, unsigned int i, unsigned int j, Vector u_fl
                 break;
             }
         }
-        if (k == nb_springs) // there is no non colinear vector between his spring neighborhood 
+        if (k == nb_springs) // there is no non colinear vector between his spring neighborhood
         {
             log_error("Cannot compute normal vector for %d, %d", i, j);
         }
