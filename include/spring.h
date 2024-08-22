@@ -13,31 +13,28 @@
 /************************************
  * INCLUDES
  ************************************/
-#include "space.h"
 #include "log.h"
 #include "params.h"
-#include <stdlib.h>
+#include "space.h"
 #include <stdbool.h>
+#include <stdlib.h>
 
 /************************************
  * MACROS AND DEFINES
  ************************************/
-
 
 /************************************
  * TYPEDEFS
  ************************************/
 
 // A spring is a segment define by two points and a stiffness
-typedef struct
-{
-    Point  ext_1;               // One extremum point
-    Point  ext_2;               // The other extremum point
-    bool   isBreak;             // Represents if the string is break or not
-    float  damage;
-    float  stiffness;
+typedef struct {
+  Point ext_1;  // One extremum point
+  Point ext_2;  // The other extremum point
+  bool isBreak; // Represents if the string is break or not
+  float damage;
+  float stiffness;
 } Spring;
-
 
 /************************************
  * EXPORTED VARIABLES AND CONST
@@ -48,7 +45,9 @@ typedef struct
  ************************************/
 
 Spring newSpring(Point, Point, float);
-unsigned int numberOfSprings(unsigned int,unsigned int);
-void fillSprings(Spring*, unsigned int***, unsigned int* spring_index, int i, int j, int n, int m);
-Spring* getPossibleSprings(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int*);
+unsigned int numberOfSprings(unsigned int, unsigned int);
+void fillSprings(Spring *, unsigned int ***, unsigned int *spring_index, int i,
+                 int j, int n, int m);
+Spring *getPossibleSprings(unsigned int, unsigned int, unsigned int,
+                           unsigned int, unsigned int *);
 #endif // !SPRING_H
