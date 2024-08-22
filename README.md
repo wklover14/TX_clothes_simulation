@@ -53,6 +53,15 @@ The Makefile provides several targets for running different mesh types:
   ```
   make run-tissus
   ```
+- For flag simulation:
+  ```
+  make run-drapeau
+  ```
+
+- For all the simulation:
+  ```
+  make run-all
+  ```
 
 ## Memory Checking
 To run the simulation with Valgrind for memory checking:
@@ -71,7 +80,10 @@ To run the simulation with Valgrind for memory checking:
   ```
   make saferun-tissus
   ```
-
+- For flag simulation:
+  ```
+  make saferun-drapeau
+  ```
 ## Cleaning the Project
 To remove all built files and VTK output:
 
@@ -145,7 +157,7 @@ The simulation generates VTK files in the `vtk_poly_<mesh_type>` and `vtk_grid_<
 ## License
 Free to use
 
-## Authors
+## Author
 - WATCHO KEUGONG Gabby Pavel (gwathok@etu.utc.fr)
 
 ## Acknowledgments
