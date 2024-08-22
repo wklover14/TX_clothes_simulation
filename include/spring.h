@@ -49,6 +49,6 @@ typedef struct
 
 Spring newSpring(Point, Point, float);
 unsigned int numberOfSprings(unsigned int,unsigned int);
-void fillSprings(Spring* springs, unsigned int* spring_index,int i, int j, int n, int m);
+void fillSprings(Spring*, unsigned int***, unsigned int* spring_index, int i, int j, int n, int m);
 Spring* getPossibleSprings(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int*);
 #endif // !SPRING_H

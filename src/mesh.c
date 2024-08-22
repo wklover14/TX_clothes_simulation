@@ -103,6 +103,16 @@ void initMesh(Mesh* mesh, meshType type)
     mesh->springs   = (Spring*) malloc(nb_springs * sizeof(Spring));
     mesh->n_springs = nb_springs;
 
+    mesh->face_spring_indices = (unsigned int***)malloc((N-1) * sizeof(unsigned int**));
+    for(unsigned int i = 0; i < N-1; i++)
+    {
+        mesh->face_spring_indices[i] = (unsigned int**)malloc((M-1) * sizeof(unsigned int*));
+        for(unsigned int j = 0; j < M-1; j++)
+        {
+            mesh->face_spring_indices[i][j] = (unsigned int*)malloc(SPRINGS_PER_FACE * sizeof(unsigned int)); // Up to 8 springs per face
+        }
+    }
+
     Vector origin = {0.0f, 0.0f, 0.0f};
     unsigned int spring_count = 0;
 
@@ -145,7 +155,7 @@ void initMesh(Mesh* mesh, meshType type)
                     freeMesh(mesh);
                     exit(EXIT_FAILURE);
             }
-            fillSprings(mesh->springs, &spring_count, i, j, N, M);
+            fillSprings(mesh->springs, mesh->face_spring_indices, &spring_count, i, j, N, M);
         }
     }
 
@@ -350,15 +360,27 @@ Vector computeFluidForce(Mesh* mesh, unsigned int i, unsigned int j, Vector u_fl
  * De-allocate correctly a mesh
  */
 void freeMesh(Mesh* mesh) {
+
+    for(unsigned int i = 0; i < mesh->n - 1; i++)
+    {
+        for(unsigned int j = 0; j<mesh->m -1; j++)
+        {
+            free(mesh->face_spring_indices[i][j]);
+        }
+        free(mesh->face_spring_indices[i]);
+    }
+
     for (unsigned int i = 0; i < mesh->n; i++) {
         free(mesh->P[i]);
         free(mesh->V[i]);
         free(mesh->P0[i]);
     }
+
     free(mesh->P);
     free(mesh->V);
     free(mesh->P0);
     free(mesh->springs);
+    free(mesh->face_spring_indices);
     free(mesh);
 }
 

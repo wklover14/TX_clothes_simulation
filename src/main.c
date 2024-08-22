@@ -58,7 +58,7 @@ int main(int argc, char** argv)
             convertMeshToPolyVTK(m, poly_file_name);
             convertMeshToGridVTK(m, grid_file_name);
         }
-        
+
         // Update the position of the mesh points for the next iteration
         updatePosition(m, DELTA_T, type);
     }

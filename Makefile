@@ -67,6 +67,8 @@ run-drapeau:
 	@echo ""
 	./$(TARGET) flag
 
+run-all: run-tissus run-drapeau run-nappe run-rideau
+
 # Run the application with memory check
 saferun-rideau:
 	@echo ""

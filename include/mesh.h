@@ -24,6 +24,7 @@
 /************************************
  * MACROS AND DEFINES
  ************************************/
+#define SPRINGS_PER_FACE  8
 
 /************************************
  * TYPEDEFS
@@ -42,6 +43,8 @@ typedef struct Mesh
 
     Spring*         springs;    // list of springs of the mesh, refered as R in the litterature
     unsigned int    n_springs;  // number of non-break springs in the mesh
+
+    unsigned int*** face_spring_indices;  // 2D array of spring indices for each face
 }Mesh;
 
 typedef enum {

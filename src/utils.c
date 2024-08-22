@@ -165,50 +165,24 @@ void convertMeshToGridVTK(const Mesh *mesh, const char *output_filename)
     fprintf(file, "SCALARS face_state int 1\n");
     fprintf(file, "LOOKUP_TABLE default\n");
 
-    unsigned int nb_springs = numberOfSprings(mesh->n, mesh->m);
-
     for (unsigned int i = 0; i < mesh->n - 1; i++) {
-    for (unsigned int j = 0; j < mesh->m - 1; j++) {
-        // Define the grid points of the face by their indices
-        Point p1 = {i, j};
-        Point p2 = {i, j + 1};
-        Point p3 = {i + 1, j};
-        Point p4 = {i + 1, j + 1};
+        for (unsigned int j = 0; j < mesh->m - 1; j++)
+        {
+            bool face_state = true;
 
-        // Initially assume the face state is true
-        bool face_state = true;
+            // Access the springs associated with this face directly
+            unsigned int* spring_indices = mesh->face_spring_indices[i][j];
 
-        // Check all springs
-        for (unsigned int k = 0; k < nb_springs; k++) {
-            Spring current = mesh->springs[k];
-
-            // Check if the spring connects two of the four points of the face, generated vy ChatGPT don't ask me how the f** he did that, but it works.
-            bool isFaceSpring =
-                ((current.ext_1.i == p1.i && current.ext_1.j == p1.j && current.ext_2.i == p2.i && current.ext_2.j == p2.j) ||
-                 (current.ext_1.i == p2.i && current.ext_1.j == p2.j && current.ext_2.i == p1.i && current.ext_2.j == p1.j)) ||
-                ((current.ext_1.i == p2.i && current.ext_1.j == p2.j && current.ext_2.i == p4.i && current.ext_2.j == p4.j) ||
-                 (current.ext_1.i == p4.i && current.ext_1.j == p4.j && current.ext_2.i == p2.i && current.ext_2.j == p2.j)) ||
-                ((current.ext_1.i == p4.i && current.ext_1.j == p4.j && current.ext_2.i == p3.i && current.ext_2.j == p3.j) ||
-                 (current.ext_1.i == p3.i && current.ext_1.j == p3.j && current.ext_2.i == p4.i && current.ext_2.j == p4.j)) ||
-                ((current.ext_1.i == p3.i && current.ext_1.j == p3.j && current.ext_2.i == p1.i && current.ext_2.j == p1.j) ||
-                 (current.ext_1.i == p1.i && current.ext_1.j == p1.j && current.ext_2.i == p3.i && current.ext_2.j == p3.j)) ||
-                ((current.ext_1.i == p1.i && current.ext_1.j == p1.j && current.ext_2.i == p4.i && current.ext_2.j == p4.j) ||
-                 (current.ext_1.i == p4.i && current.ext_1.j == p4.j && current.ext_2.i == p1.i && current.ext_2.j == p1.j)) ||
-                ((current.ext_1.i == p2.i && current.ext_1.j == p2.j && current.ext_2.i == p3.i && current.ext_2.j == p3.j) ||
-                 (current.ext_1.i == p3.i && current.ext_1.j == p3.j && current.ext_2.i == p2.i && current.ext_2.j == p2.j));
-
-            // If this spring is part of the face and is broken, mark the face as false
-            if (isFaceSpring && current.isBreak) {
-                face_state = false;
-                break;
+            for (unsigned int k = 0; k < 4; k++) { // we use 4 because we consider only structural springs are part of the face.
+                if (spring_indices[k] != -1 && mesh->springs[spring_indices[k]].isBreak) { // the spring_indices[k] != -1 condition may be unnecessary but...
+                    face_state = false;
+                    break;
+                }
             }
+
+            // Write the face state
+            fprintf(file, "%d\n", face_state ? 1 : 0);
         }
-
-        // Write the face state
-        fprintf(file, "%d\n", face_state ? 1 : 0);
     }
-}
-
-
     fclose(file);
 }
