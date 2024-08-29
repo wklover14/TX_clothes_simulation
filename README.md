@@ -151,6 +151,42 @@ meshType parseArguments(int argc, char *argv[]) {
 //...
 ```
 
+## Code specification
+
+### Mesh
+The mesh struct presents as follow :
+```C
+typedef struct Mesh {
+  unsigned int n; // number of lines
+  unsigned int m; // number of columns
+
+  float t;    // the time at which position P are calculated
+  Vector **P; // Coordinate in the space at t time, should be used for rendering
+  Vector **V; // Velocity matrix n*m
+
+  Vector **P0; // Initial position matrix
+
+  Spring
+      *springs; // list of springs of the mesh, refered as R in the litterature
+  unsigned int n_springs; // number of non-break springs in the mesh
+
+  unsigned int **
+      *face_spring_indices; // 3D array of spring indices for each face
+} Mesh;
+```
+At the initial time (t = 0), the positions P and P0 are identical.
+
+Face are defined by the bottom-left point and others points are computed in a very short time.
+
+The face_spring_indices is a 3D array that maps each face (i, j) in the position matrix P to the indices of the springs connected to that point. The integer k represents the index of a spring for a face associated with a given point (0 to 4 for structural springs), and the corresponding value in the array is the index of the spring in the springs array.
+
+This allow for each face, to quickly identify breaked-springs.
+
+### Springs
+The springs are initialized and counted in a specific order. The process starts from the bottom-left point (0, 0) and proceeds by attempting to connect to other points by incrementing the indices `i` and `j` by `1` or `2` (e.g., (i, j+1), (i+1, j), (i+1, j+1), (i+2, j), (i, j+2)).
+
+This method allows the springs to be computed simultaneously while initializing the matrix values for other points.
+
 ## Output
 The simulation generates VTK files in the `vtk_poly_<mesh_type>` and `vtk_grid_<mesh_type>` directories for visualization. These can be viewed using appropriate VTK visualization software.
 
